@@ -17,19 +17,19 @@
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/rng.hpp"
 
-// caffe.proto > LayerParameter > WindowDataParameter
+// caffe.proto > LayerParameter > WindowPairDataParameter
 //   'source' field specifies the window_file
 //   'crop_size' indicates the desired warped size
 
 namespace caffe {
 
 template <typename Dtype>
-WindowDataLayer<Dtype>::~WindowDataLayer<Dtype>() { //destructor
+WindowPairDataLayer<Dtype>::~WindowPairDataLayer<Dtype>() { //destructor
   this->JoinPrefetchThread();
 }
 
 template <typename Dtype>
-void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+void WindowPairDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top) {
   // LayerSetUp runs through the window_file and creates two structures
   // that hold windows: one for foreground (object) windows and one
@@ -39,7 +39,8 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // window_file format
   // repeated:
   //    # image_index
-  //    img_path (abs path)
+  //    ground_img_path (abs path)
+  //    sat_img_path (abs path)
   //    channels
   //    height
   //    width
@@ -68,7 +69,7 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK(infile.good()) << "Failed to open window file "
       << this->layer_param_.window_data_param().source() << std::endl;
 
-  map<int, int> label_hist; //number of windows assigned to each label - key: classname, value: #windows
+  map<int, int> label_hist; //number of windows assigned to each label (in this case, only similar/dissimilar - not explicitly given... just inferred) - key: classname, value: #windows
   label_hist.insert(std::make_pair(0, 0)); // 0 corresponds to be background class
 
   string hashtag;
@@ -79,13 +80,13 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   do {
     CHECK_EQ(hashtag, "#");
     // read image path
-    string image_path;
-    infile >> image_path; // get image filename
+    string ground_img_path, sat_img_path;
+    infile >> ground_img_path >> sat_img_path; // get image filename
     // read image dimensions
     vector<int> image_size(3);
     infile >> image_size[0] >> image_size[1] >> image_size[2]; //get image dimensions - channels, height, width
     channels = image_size[0];
-    image_database_.push_back(std::make_pair(image_path, image_size)); //database stored as map from image path to size
+    imagepair_database_.push_back(std::make_pair(std::make_pair(ground_img_path, sat_image_path), image_size)); //database stored as map from image path to size
 
     // read each box
     int num_windows;
@@ -95,30 +96,34 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
     const float bg_threshold =
         this->layer_param_.window_data_param().bg_threshold();
     for (int i = 0; i < num_windows; ++i) {// for each box
-      int label, x1, y1, x2, y2;
+      int xg1, yg1, xg2, yg2, xs1, ys1, xs2, ys2;
       float overlap;
-      infile >> label >> overlap >> x1 >> y1 >> x2 >> y2;
+      infile >> overlap >> xg1 >> yg1 >> xg2 >> yg2 >> xs1 >> ys1 >> xs2 >> ys2;
 
-      vector<float> window(WindowDataLayer::NUM);
-      window[WindowDataLayer::IMAGE_INDEX] = image_index;
-      window[WindowDataLayer::LABEL] = label;
-      window[WindowDataLayer::OVERLAP] = overlap;
-      window[WindowDataLayer::X1] = x1;
-      window[WindowDataLayer::Y1] = y1;
-      window[WindowDataLayer::X2] = x2;
-      window[WindowDataLayer::Y2] = y2;
-
+      vector<float> window(WindowPairDataLayer::NUM);
+      window[WindowPairDataLayer::IMAGE_INDEX] = image_index;
+      //window[WindowPairDataLayer::LABEL] = label;
+      window[WindowPairDataLayer::OVERLAP] = overlap;
+      window[WindowPairDataLayer::XG1] = xg1;
+      window[WindowPairDataLayer::YG1] = yg1;
+      window[WindowPairDataLayer::XG2] = xg2;
+      window[WindowPairDataLayer::YG2] = yg2;
+      window[WindowPairDataLayer::XS1] = xs1;
+      window[WindowPairDataLayer::YS1] = ys1;
+      window[WindowPairDataLayer::XS2] = xs2;
+      window[WindowPairDataLayer::YS2] = ys2;
+   
       // add window to foreground list or background list
       if (overlap >= fg_threshold) {
-        int label = window[WindowDataLayer::LABEL];
-        CHECK_GT(label, 0); // no class is assigned 0 label
+        //int label = window[WindowPairDataLayer::LABEL];
+        //CHECK_GT(label, 0); // no class is assigned 0 label
         fg_windows_.push_back(window);
         label_hist.insert(std::make_pair(label, 0));
-        label_hist[label]++;
+        label_hist[1]++; 
       } else if (overlap < bg_threshold) {
         // background window, force label and overlap to 0
-        window[WindowDataLayer::LABEL] = 0;
-        window[WindowDataLayer::OVERLAP] = 0;
+        window[WindowPairDataLayer::LABEL] = 0;
+        window[WindowPairDataLayer::OVERLAP] = 0;
         bg_windows_.push_back(window);
         label_hist[0]++;
       }
@@ -137,7 +142,7 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   LOG(INFO) << "Number of images: " << image_index+1;
 
   for (map<int, int>::iterator it = label_hist.begin();
-      it != label_hist.end(); ++it) {
+      it != label_hist.end(); ++it) {// only two classes - match and non-match
     LOG(INFO) << "class " << it->first << " has " << label_hist[it->first]
               << " samples";
   }
@@ -153,7 +158,9 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK_GT(crop_size, 0);
   const int batch_size = this->layer_param_.window_data_param().batch_size();
   (*top)[0]->Reshape(batch_size, channels, crop_size, crop_size);
-  this->prefetch_data_.Reshape(batch_size, channels, crop_size, crop_size);
+  //this->prefetch_data_.Reshape(batch_size, channels, crop_size, crop_size);
+  this->prefetch_ground_.Reshape(batch_size, channels, crop_size, crop_size);
+  this->prefetch_sat_.Reshape(batch_size, channels, crop_size, crop_size);
 
   LOG(INFO) << "output data size: " << (*top)[0]->num() << ","
       << (*top)[0]->channels() << "," << (*top)[0]->height() << ","
@@ -166,11 +173,11 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
       (*top)[0]->channels() * (*top)[0]->height() * (*top)[0]->width();
   // label
   (*top)[1]->Reshape(batch_size, 1, 1, 1);
-  this->prefetch_label_.Reshape(batch_size, 1, 1, 1);
+  this->prefetch_label_.Reshape(batch_size, 1, 1, 1); //TODO: should this be omitted? Where are we setting this?
 }
 
 template <typename Dtype>
-unsigned int WindowDataLayer<Dtype>::PrefetchRand() {
+unsigned int WindowPairDataLayer<Dtype>::PrefetchRand() {
   CHECK(prefetch_rng_);
   caffe::rng_t* prefetch_rng =
       static_cast<caffe::rng_t*>(prefetch_rng_->generator());
@@ -179,20 +186,21 @@ unsigned int WindowDataLayer<Dtype>::PrefetchRand() {
 
 // Thread fetching the data
 template <typename Dtype>
-void WindowDataLayer<Dtype>::InternalThreadEntry() {
+void WindowPairDataLayer<Dtype>::InternalThreadEntry() {
   // At each iteration, sample N windows where N*p are foreground (object)
   // windows and N*(1-p) are background (non-object) windows
 
-  Dtype* top_data = this->prefetch_data_.mutable_cpu_data();
+  Dtype* top_ground = this->prefetch_ground_.mutable_cpu_data();
+  Dtype* top_sat = this->prefetch_sat_.mutable_cpu_data();
   Dtype* top_label = this->prefetch_label_.mutable_cpu_data();
   const Dtype scale = this->layer_param_.window_data_param().scale();
   const int batch_size = this->layer_param_.window_data_param().batch_size();
   const int context_pad = this->layer_param_.window_data_param().context_pad();
-  const int crop_size = this->transform_param_.crop_size();
+  const int crop_size = this->transform_param_.crop_size(); // TODO: Is it possible to have two separate crop sizes for the two input streams?
   const bool mirror = this->transform_param_.mirror();
   const float fg_fraction =
       this->layer_param_.window_data_param().fg_fraction();
-  const Dtype* mean = this->data_mean_.cpu_data();
+  const Dtype* mean = this->data_mean_.cpu_data(); //TODO: Is it possible to have two separate means for the the two input streams?
   const int mean_off = (this->data_mean_.width() - crop_size) / 2;
   const int mean_width = this->data_mean_.width();
   const int mean_height = this->data_mean_.height();
@@ -224,134 +232,155 @@ void WindowDataLayer<Dtype>::InternalThreadEntry() {
       }
 
       // load the image containing the window
-      pair<std::string, vector<int> > image =
-          image_database_[window[WindowDataLayer<Dtype>::IMAGE_INDEX]];
+      pair<pair<std::string, std::string>, vector<int> > image =
+          imagepair_database_[window[WindowPairDataLayer<Dtype>::IMAGE_INDEX]];
 
-      cv::Mat cv_img = cv::imread(image.first, CV_LOAD_IMAGE_COLOR);
-      if (!cv_img.data) {
-        LOG(ERROR) << "Could not open or find file " << image.first;
-        return;
-      }
-      const int channels = cv_img.channels();
+      std::string img_path[2];
+      img_path[0]=image.first.first; // ground_img_path
+      img_path[1]=image.first.second; // sat_img_path
 
       // crop window out of image and warp it
-      int x1 = window[WindowDataLayer<Dtype>::X1];
-      int y1 = window[WindowDataLayer<Dtype>::Y1];
-      int x2 = window[WindowDataLayer<Dtype>::X2];
-      int y2 = window[WindowDataLayer<Dtype>::Y2];
+      int x1[2], y1[2], x2[2], y2[2];
+      x1[0] = window[WindowPairDataLayer<Dtype>::XG1];
+      y1[0] = window[WindowPairDataLayer<Dtype>::YG1];
+      x2[0] = window[WindowPairDataLayer<Dtype>::XG2];
+      y2[0] = window[WindowPairDataLayer<Dtype>::YG2];
+      x1[1] = window[WindowPairDataLayer<Dtype>::XS1];
+      y1[1] = window[WindowPairDataLayer<Dtype>::YS1];
+      x2[1] = window[WindowPairDataLayer<Dtype>::XS2];
+      y2[1] = window[WindowPairDataLayer<Dtype>::YS2];
+       
 
-      int pad_w = 0;
-      int pad_h = 0;
-      if (context_pad > 0 || use_square) {
-        // scale factor by which to expand the original region
-        // such that after warping the expanded region to crop_size x crop_size
-        // there's exactly context_pad amount of padding on each side
-        Dtype context_scale = static_cast<Dtype>(crop_size) /
-            static_cast<Dtype>(crop_size - 2*context_pad);
+      for(int imgno=0; imgno<2; imgno++){ // ground and sat images
+        cv::Mat cv_img = cv::imread(img_path[imgno], CV_LOAD_IMAGE_COLOR);
+        if (!cv_img.data) {
+        LOG(ERROR) << "Could not open or find file " << img_path[imgno];
+        return;
+        } 
+        const int channels = cv_img.channels();
 
-        // compute the expanded region
-        Dtype half_height = static_cast<Dtype>(y2-y1+1)/2.0;
-        Dtype half_width = static_cast<Dtype>(x2-x1+1)/2.0;
-        Dtype center_x = static_cast<Dtype>(x1) + half_width;
-        Dtype center_y = static_cast<Dtype>(y1) + half_height;
-        if (use_square) {
-          if (half_height > half_width) {
-            half_width = half_height;
+        int pad_w = 0;
+        int pad_h = 0;
+        if (context_pad > 0 || use_square) {
+          // scale factor by which to expand the original region
+          // such that after warping the expanded region to crop_size x crop_size
+          // there's exactly context_pad amount of padding on each side
+          Dtype context_scale = static_cast<Dtype>(crop_size) /
+              static_cast<Dtype>(crop_size - 2*context_pad);
+
+          // compute the expanded region
+          Dtype half_height = static_cast<Dtype>(y2[imgno]-y1[imgno]+1)/2.0;
+          Dtype half_width = static_cast<Dtype>(x2[imgno]-x1[imgno]+1)/2.0;
+          Dtype center_x = static_cast<Dtype>(x1[imgno]) + half_width;
+          Dtype center_y = static_cast<Dtype>(y1[imgno]) + half_height;
+          if (use_square) {
+            if (half_height > half_width) {
+              half_width = half_height;
+            } else {
+              half_height = half_width;
+            }
+          }
+          x1[imgno] = static_cast<int>(round(center_x - half_width*context_scale));
+          x2[imgno] = static_cast<int>(round(center_x + half_width*context_scale));
+          y1[imgno] = static_cast<int>(round(center_y - half_height*context_scale));
+          y2[imgno] = static_cast<int>(round(center_y + half_height*context_scale));
+
+          // the expanded region may go outside of the image
+          // so we compute the clipped (expanded) region and keep track of
+          // the extent beyond the image
+          int unclipped_height = y2[imgno]-y1[imgno]+1;
+          int unclipped_width = x2[imgno]-x1[imgno]+1;
+          int pad_x1 = std::max(0, -x1[imgno]);
+          int pad_y1 = std::max(0, -y1[imgno]);
+          int pad_x2 = std::max(0, x2[imgno] - cv_img.cols + 1);
+          int pad_y2 = std::max(0, y2[imgno] - cv_img.rows + 1);
+          // clip bounds
+          x1[imgno] = x1[imgno] + pad_x1;
+          x2[imgno] = x2[imgno] - pad_x2;
+          y1[imgno] = y1[imgno] + pad_y1;
+          y2[imgno] = y2[imgno] - pad_y2;
+          CHECK_GT(x1[imgno], -1);
+          CHECK_GT(y[imgno]1, -1);
+          CHECK_LT(x2[imgno], cv_img.cols);
+          CHECK_LT(y2[imgno], cv_img.rows);
+
+          int clipped_height = y2[imgno]-y1[imgno]+1;
+          int clipped_width = x2[imgno]-x1[imgno]+1;
+
+          // scale factors that would be used to warp the unclipped
+          // expanded region
+          Dtype scale_x =
+              static_cast<Dtype>(crop_size)/static_cast<Dtype>(unclipped_width);
+          Dtype scale_y =
+              static_cast<Dtype>(crop_size)/static_cast<Dtype>(unclipped_height);
+
+          // size to warp the clipped expanded region to
+          cv_crop_size.width =
+              static_cast<int>(round(static_cast<Dtype>(clipped_width)*scale_x));
+          cv_crop_size.height =
+              static_cast<int>(round(static_cast<Dtype>(clipped_height)*scale_y));
+          pad_x1 = static_cast<int>(round(static_cast<Dtype>(pad_x1)*scale_x));
+          pad_x2 = static_cast<int>(round(static_cast<Dtype>(pad_x2)*scale_x));
+          pad_y1 = static_cast<int>(round(static_cast<Dtype>(pad_y1)*scale_y));
+          pad_y2 = static_cast<int>(round(static_cast<Dtype>(pad_y2)*scale_y));
+
+          pad_h = pad_y1;
+          // if we're mirroring, we mirror the padding too (to be pedantic)
+          if (do_mirror) {
+            pad_w = pad_x2;
           } else {
-            half_height = half_width;
+            pad_w = pad_x1;
+          }
+
+          // ensure that the warped, clipped region plus the padding fits in the
+          // crop_size x crop_size image (it might not due to rounding)
+          if (pad_h + cv_crop_size.height > crop_size) {
+            cv_crop_size.height = crop_size - pad_h;
+          }
+          if (pad_w + cv_crop_size.width > crop_size) {
+            cv_crop_size.width = crop_size - pad_w;
           }
         }
-        x1 = static_cast<int>(round(center_x - half_width*context_scale));
-        x2 = static_cast<int>(round(center_x + half_width*context_scale));
-        y1 = static_cast<int>(round(center_y - half_height*context_scale));
-        y2 = static_cast<int>(round(center_y + half_height*context_scale));
 
-        // the expanded region may go outside of the image
-        // so we compute the clipped (expanded) region and keep track of
-        // the extent beyond the image
-        int unclipped_height = y2-y1+1;
-        int unclipped_width = x2-x1+1;
-        int pad_x1 = std::max(0, -x1);
-        int pad_y1 = std::max(0, -y1);
-        int pad_x2 = std::max(0, x2 - cv_img.cols + 1);
-        int pad_y2 = std::max(0, y2 - cv_img.rows + 1);
-        // clip bounds
-        x1 = x1 + pad_x1;
-        x2 = x2 - pad_x2;
-        y1 = y1 + pad_y1;
-        y2 = y2 - pad_y2;
-        CHECK_GT(x1, -1);
-        CHECK_GT(y1, -1);
-        CHECK_LT(x2, cv_img.cols);
-        CHECK_LT(y2, cv_img.rows);
+        cv::Rect roi(x1[imgno], y1[imgno], x2[imgno]-x1[imgno]+1, y2[imgno]-y1[imgno]+1);
+        cv::Mat cv_cropped_img = cv_img(roi);
+        cv::resize(cv_cropped_img, cv_cropped_img,
+            cv_crop_size, 0, 0, cv::INTER_LINEAR);
 
-        int clipped_height = y2-y1+1;
-        int clipped_width = x2-x1+1;
-
-        // scale factors that would be used to warp the unclipped
-        // expanded region
-        Dtype scale_x =
-            static_cast<Dtype>(crop_size)/static_cast<Dtype>(unclipped_width);
-        Dtype scale_y =
-            static_cast<Dtype>(crop_size)/static_cast<Dtype>(unclipped_height);
-
-        // size to warp the clipped expanded region to
-        cv_crop_size.width =
-            static_cast<int>(round(static_cast<Dtype>(clipped_width)*scale_x));
-        cv_crop_size.height =
-            static_cast<int>(round(static_cast<Dtype>(clipped_height)*scale_y));
-        pad_x1 = static_cast<int>(round(static_cast<Dtype>(pad_x1)*scale_x));
-        pad_x2 = static_cast<int>(round(static_cast<Dtype>(pad_x2)*scale_x));
-        pad_y1 = static_cast<int>(round(static_cast<Dtype>(pad_y1)*scale_y));
-        pad_y2 = static_cast<int>(round(static_cast<Dtype>(pad_y2)*scale_y));
-
-        pad_h = pad_y1;
-        // if we're mirroring, we mirror the padding too (to be pedantic)
+        // horizontal flip at random
         if (do_mirror) {
-          pad_w = pad_x2;
-        } else {
-          pad_w = pad_x1;
+          cv::flip(cv_cropped_img, cv_cropped_img, 1);
         }
 
-        // ensure that the warped, clipped region plus the padding fits in the
-        // crop_size x crop_size image (it might not due to rounding)
-        if (pad_h + cv_crop_size.height > crop_size) {
-          cv_crop_size.height = crop_size - pad_h;
-        }
-        if (pad_w + cv_crop_size.width > crop_size) {
-          cv_crop_size.width = crop_size - pad_w;
-        }
-      }
+        // copy the warped window into top_data
+        for (int c = 0; c < channels; ++c) {
+          for (int h = 0; h < cv_cropped_img.rows; ++h) {
+            for (int w = 0; w < cv_cropped_img.cols; ++w) {
+              Dtype pixel =
+                  static_cast<Dtype>(cv_cropped_img.at<cv::Vec3b>(h, w)[c]);
 
-      cv::Rect roi(x1, y1, x2-x1+1, y2-y1+1);
-      cv::Mat cv_cropped_img = cv_img(roi);
-      cv::resize(cv_cropped_img, cv_cropped_img,
-          cv_crop_size, 0, 0, cv::INTER_LINEAR);
-
-      // horizontal flip at random
-      if (do_mirror) {
-        cv::flip(cv_cropped_img, cv_cropped_img, 1);
-      }
-
-      // copy the warped window into top_data
-      for (int c = 0; c < channels; ++c) {
-        for (int h = 0; h < cv_cropped_img.rows; ++h) {
-          for (int w = 0; w < cv_cropped_img.cols; ++w) {
-            Dtype pixel =
-                static_cast<Dtype>(cv_cropped_img.at<cv::Vec3b>(h, w)[c]);
-
-            top_data[((item_id * channels + c) * crop_size + h + pad_h)
-                     * crop_size + w + pad_w]
-                = (pixel
-                    - mean[(c * mean_height + h + mean_off + pad_h)
-                           * mean_width + w + mean_off + pad_w])
-                  * scale;
+              if(imgno==0){
+              top_ground[((item_id * channels + c) * crop_size + h + pad_h)
+                       * crop_size + w + pad_w]
+                  = (pixel
+                      - mean[(c * mean_height + h + mean_off + pad_h)
+                             * mean_width + w + mean_off + pad_w])
+                    * scale;
+              }else{
+               top_sat[((item_id * channels + c) * crop_size + h + pad_h)
+                       * crop_size + w + pad_w]
+                  = (pixel
+                      - mean[(c * mean_height + h + mean_off + pad_h)
+                             * mean_width + w + mean_off + pad_w])
+                    * scale;
+              }
+            }
           }
         }
       }
 
       // get window label
-      top_label[item_id] = window[WindowDataLayer<Dtype>::LABEL];
+      top_label[item_id] = window[WindowPairDataLayer<Dtype>::LABEL];
 
       #if 0
       // useful debugging code for dumping transformed windows to disk
@@ -362,10 +391,10 @@ void WindowDataLayer<Dtype>::InternalThreadEntry() {
       std::ofstream inf((string("dump/") + file_id +
           string("_info.txt")).c_str(), std::ofstream::out);
       inf << image.first << std::endl
-          << window[WindowDataLayer<Dtype>::X1]+1 << std::endl
-          << window[WindowDataLayer<Dtype>::Y1]+1 << std::endl
-          << window[WindowDataLayer<Dtype>::X2]+1 << std::endl
-          << window[WindowDataLayer<Dtype>::Y2]+1 << std::endl
+          << window[WindowPairDataLayer<Dtype>::X1]+1 << std::endl
+          << window[WindowPairDataLayer<Dtype>::Y1]+1 << std::endl
+          << window[WindowPairDataLayer<Dtype>::X2]+1 << std::endl
+          << window[WindowPairDataLayer<Dtype>::Y2]+1 << std::endl
           << do_mirror << std::endl
           << top_label[item_id] << std::endl
           << is_fg << std::endl;
@@ -391,6 +420,6 @@ void WindowDataLayer<Dtype>::InternalThreadEntry() {
   }
 }
 
-INSTANTIATE_CLASS(WindowDataLayer);
+INSTANTIATE_CLASS(WindowPairDataLayer);
 
 }  // namespace caffe

@@ -345,6 +345,33 @@ class WindowDataLayer : public BasePrefetchingDataLayer<Dtype> {
   vector<vector<float> > bg_windows_;
 };
 
+template <typename Dtype>
+class WindowPairDataLayer : public BasePrefetchingDataLayer<Dtype> {
+ public:
+  explicit WindowPairDataLayer(const LayerParameter& param)
+      : BasePrefetchingDataLayer<Dtype>(param) {}
+  virtual ~WindowPairDataLayer();
+  virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      vector<Blob<Dtype>*>* top);
+
+  virtual inline LayerParameter_LayerType type() const {
+    return LayerParameter_LayerType_WINDOW_DATA;
+  }
+  virtual inline int ExactNumBottomBlobs() const { return 0; }
+  virtual inline int ExactNumTopBlobs() const { return 2; }
+
+ protected:
+  virtual unsigned int PrefetchRand();
+  virtual void InternalThreadEntry();
+
+  shared_ptr<Caffe::RNG> prefetch_rng_;
+  vector<std::pair<std::pair<std::string, std::string>, vector<int> > > imagepair_database_;
+  enum WindowField { IMAGE_INDEX, OVERLAP, XG1, YG1, XG2, YG2, XS1, YS1, XS2, YS2, NUM };
+  vector<vector<float>> fg_windows_;
+  vector<vector<float>> bg_windows_;
+};
+
 }  // namespace caffe
+ 
 
 #endif  // CAFFE_DATA_LAYERS_HPP_
