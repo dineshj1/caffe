@@ -44,7 +44,7 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   //    height
   //    width
   //    num_windows
-  //    class_index overlap x1 y1 x2 y2
+  //    overlap xg1 yg1 xg2 yg2 xs1 ys1 xs2 ys2
 
   LOG(INFO) << "Window data layer:" << std::endl
       << "  foreground (object) overlap threshold: "
