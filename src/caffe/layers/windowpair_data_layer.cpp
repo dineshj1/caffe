@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <map>
 #include <string>
-#include <utility>
 #include <vector>
+#include <utility>
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
