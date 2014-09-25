@@ -86,7 +86,7 @@ void WindowPairDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
     vector<int> image_size(3);
     infile >> image_size[0] >> image_size[1] >> image_size[2]; //get image dimensions - channels, height, width
     channels = image_size[0];
-    imagepair_database_.push_back(std::make_pair(std::make_pair(ground_img_path, sat_image_path), image_size)); //database stored as map from image path to size
+    imagepair_database_.push_back(std::make_pair(std::make_pair(ground_img_path, sat_img_path), image_size)); //database stored as map from image path to size
 
     // read each box
     int num_windows;
@@ -102,7 +102,6 @@ void WindowPairDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
 
       vector<float> window(WindowPairDataLayer::NUM);
       window[WindowPairDataLayer::IMAGE_INDEX] = image_index;
-      //window[WindowPairDataLayer::LABEL] = label;
       window[WindowPairDataLayer::OVERLAP] = overlap;
       window[WindowPairDataLayer::XG1] = xg1;
       window[WindowPairDataLayer::YG1] = yg1;
@@ -115,10 +114,11 @@ void WindowPairDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
    
       // add window to foreground list or background list
       if (overlap >= fg_threshold) {
-        //int label = window[WindowPairDataLayer::LABEL];
-        //CHECK_GT(label, 0); // no class is assigned 0 label
+        window[WindowPairDataLayer::LABEL] = 1;
+        int label = window[WindowPairDataLayer::LABEL];
+        CHECK_GT(label, 0); // no class is assigned 0 label
         fg_windows_.push_back(window);
-        label_hist.insert(std::make_pair(label, 0));
+        label_hist.insert(std::make_pair(1, 0));
         label_hist[1]++; 
       } else if (overlap < bg_threshold) {
         // background window, force label and overlap to 0
@@ -131,7 +131,8 @@ void WindowPairDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
 
     if (image_index % 100 == 0) { // for every hundredth image
       LOG(INFO) << "num: " << image_index << " "
-          << image_path << " "
+          << ground_img_path << " "
+          << sat_img_path << " "
           << image_size[0] << " "
           << image_size[1] << " "
           << image_size[2] << " "
@@ -210,7 +211,8 @@ void WindowPairDataLayer<Dtype>::InternalThreadEntry() {
   bool use_square = (crop_mode == "square") ? true : false;
 
   // zero out batch
-  caffe_set(this->prefetch_data_.count(), Dtype(0), top_data);
+  caffe_set(this->prefetch_ground_.count(), Dtype(0), top_ground);
+  caffe_set(this->prefetch_sat_.count(), Dtype(0), top_sat);
 
   const int num_fg = static_cast<int>(static_cast<float>(batch_size)
       * fg_fraction);
@@ -300,7 +302,7 @@ void WindowPairDataLayer<Dtype>::InternalThreadEntry() {
           y1[imgno] = y1[imgno] + pad_y1;
           y2[imgno] = y2[imgno] - pad_y2;
           CHECK_GT(x1[imgno], -1);
-          CHECK_GT(y[imgno]1, -1);
+          CHECK_GT(y1[imgno], -1);
           CHECK_LT(x2[imgno], cv_img.cols);
           CHECK_LT(y2[imgno], cv_img.rows);
 

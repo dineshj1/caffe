@@ -365,10 +365,13 @@ class WindowPairDataLayer : public BasePrefetchingDataLayer<Dtype> {
   virtual void InternalThreadEntry();
 
   shared_ptr<Caffe::RNG> prefetch_rng_;
+  Blob<Dtype> prefetch_ground_;
+  Blob<Dtype> prefetch_sat_;
+
   vector<std::pair<std::pair<std::string, std::string>, vector<int> > > imagepair_database_;
-  enum WindowField { IMAGE_INDEX, OVERLAP, XG1, YG1, XG2, YG2, XS1, YS1, XS2, YS2, NUM };
-  vector<vector<float>> fg_windows_;
-  vector<vector<float>> bg_windows_;
+  enum WindowField { IMAGE_INDEX, LABEL, OVERLAP, XG1, YG1, XG2, YG2, XS1, YS1, XS2, YS2, NUM };
+  vector<vector<float> > fg_windows_;
+  vector<vector<float> > bg_windows_;
 };
 
 }  // namespace caffe
