@@ -358,7 +358,7 @@ class WindowPairDataLayer : public BasePrefetchingDataLayer<Dtype> {
     return LayerParameter_LayerType_WINDOW_DATA;
   }
   virtual inline int ExactNumBottomBlobs() const { return 0; }
-  virtual inline int ExactNumTopBlobs() const { return 2; }
+  virtual inline int ExactNumTopBlobs() const { return 3; }
 
  protected:
   virtual unsigned int PrefetchRand();
