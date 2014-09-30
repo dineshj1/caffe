@@ -640,12 +640,16 @@ void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
   for (int i = 0; i < num_source_layers; ++i) {
     Layer<Dtype>* source_layer = other->layers()[i].get();
     const string& source_layer_name = other->layer_names()[i];
+    DLOG(INFO) << "Looking for matches for " << source_layer_name;
     int numMatches=0;
     for (int target_layer_id=0; target_layer_id<layer_names_.size(); target_layer_id++) {
+
+      DLOG(INFO) << "Target #" << target_layer_id<<": "<<layer_names_[target_layer_id];
+
       if (layer_names_[target_layer_id] == source_layer_name) {
         numMatches++;
         // copy layers
-        DLOG(INFO) << "Copying source layer " << source_layer_name;
+        LOG(INFO) << "Copying source layer " << source_layer_name;
         vector<shared_ptr<Blob<Dtype> > >& target_blobs =
             layers_[target_layer_id]->blobs();
         CHECK_EQ(target_blobs.size(), source_layer->blobs().size())
@@ -698,12 +702,16 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
   for (int i = 0; i < num_source_layers; ++i) {
     const LayerParameter& source_layer = param.layers(i);
     const string& source_layer_name = source_layer.name();
+    LOG(INFO) << "Looking for matches for " << source_layer_name;
     int numMatches=0;
     for (int target_layer_id=0; target_layer_id<layer_names_.size(); target_layer_id++) {
+ 
+      LOG(INFO) << "Target #" << target_layer_id<<": "<<layer_names_[target_layer_id];
+ 
       if (layer_names_[target_layer_id] == source_layer_name) {
         numMatches++;
         // copy layers
-        DLOG(INFO) << "Copying source layer " << source_layer_name;
+        LOG(INFO) << "Copying source layer " << source_layer_name;
         vector<shared_ptr<Blob<Dtype> > >& target_blobs =
             layers_[target_layer_id]->blobs();
         CHECK_EQ(target_blobs.size(), source_layer.blobs_size())

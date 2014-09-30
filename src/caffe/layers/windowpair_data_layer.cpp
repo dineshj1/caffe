@@ -47,7 +47,7 @@ void WindowPairDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
   //    num_windows
   //    overlap xg1 yg1 xg2 yg2 xs1 ys1 xs2 ys2
 
-  LOG(INFO) << "Window data layer:" << std::endl
+  LOG(INFO) << "Window Pair data layer:" << std::endl
       << "  foreground (object) overlap threshold: "
       << this->layer_param_.window_data_param().fg_threshold() << std::endl
       << "  background (non-object) overlap threshold: "
@@ -159,7 +159,7 @@ void WindowPairDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
   CHECK_GT(crop_size, 0);
   const int batch_size = this->layer_param_.window_data_param().batch_size();
   (*top)[0]->Reshape(batch_size, channels, crop_size, crop_size);
-  //this->prefetch_data_.Reshape(batch_size, channels, crop_size, crop_size);
+  (*top)[1]->Reshape(batch_size, channels, crop_size, crop_size);
   this->prefetch_ground_.Reshape(batch_size, channels, crop_size, crop_size);
   this->prefetch_sat_.Reshape(batch_size, channels, crop_size, crop_size);
 
@@ -173,7 +173,7 @@ void WindowPairDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
   this->datum_size_ =
       (*top)[0]->channels() * (*top)[0]->height() * (*top)[0]->width();
   // label
-  (*top)[1]->Reshape(batch_size, 1, 1, 1);
+  (*top)[2]->Reshape(batch_size, 1, 1, 1);
   this->prefetch_label_.Reshape(batch_size, 1, 1, 1); //TODO: should this be omitted? Where are we setting this?
 }
 
@@ -197,7 +197,7 @@ void WindowPairDataLayer<Dtype>::InternalThreadEntry() {
   const Dtype scale = this->layer_param_.window_data_param().scale();
   const int batch_size = this->layer_param_.window_data_param().batch_size();
   const int context_pad = this->layer_param_.window_data_param().context_pad();
-  const int crop_size = this->transform_param_.crop_size(); // TODO: Is it possible to have two separate crop sizes for the two input streams?
+  const int crop_size = this->transform_param_.crop_size();
   const bool mirror = this->transform_param_.mirror();
   const float fg_fraction =
       this->layer_param_.window_data_param().fg_fraction();
