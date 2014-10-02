@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h> // to use std::rand
 
 #include <algorithm>
 #include <map>
@@ -210,10 +211,20 @@ void WindowDataLayer<Dtype>::InternalThreadEntry() {
 
   int item_id = 0;
   // sample from bg set then fg set
+  static unsigned int iterno= 01;
+  iterno=iterno+1; //incremented in every function call
+  iterno=iterno-iterno%2; //accounting for the fact that there are 2 WINDOW_DATA layers
+  //LOG(INFO) << "srand was initialized with iterno:"<< iterno << std::endl;
+  //LOG(INFO) << "Rand sample (debug check):"<< rand() << std::endl;
   for (int is_fg = 0; is_fg < 2; ++is_fg) {
     for (int dummy = 0; dummy < num_samples[is_fg]; ++dummy) {
+      srand(iterno+is_fg+dummy); 
       // sample a window
-      const unsigned int rand_index = PrefetchRand();
+      //const unsigned int rand_index = PrefetchRand();
+      const unsigned int rand_index = rand();
+      //if(dummy==num_samples[is_fg]-1){
+      //LOG(INFO) << "is_fg"<< is_fg << ", rand sample (debug check):" << rand() << std::endl;
+      //}
       vector<float> window = (is_fg) ?
           fg_windows_[rand_index % fg_windows_.size()] :
           bg_windows_[rand_index % bg_windows_.size()];
