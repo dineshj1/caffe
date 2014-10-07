@@ -28,6 +28,7 @@
 
 # build, distribute, and bins
 build
+build_jd_v0.1
 .build_debug/*
 .build_release/*
 distribute/*
