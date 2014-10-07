@@ -262,7 +262,7 @@ message LayerParameter {
     TANH = 23;
     WINDOW_DATA = 24;
     WINDOWPAIR_DATA = 38; // to be discarded?
-    AP_LAYER = 39;
+    AP = 39;
     THRESHOLD = 31;
   }
   optional LayerType type = 5; // the layer type from the enum above
