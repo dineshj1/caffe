@@ -136,6 +136,8 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   } while (infile >> hashtag >> image_index); // till end of file
 
   LOG(INFO) << "Number of images: " << image_index+1;
+  LOG(INFO) << "Number of fg(+) windows: " << fg_windows_.size();
+  LOG(INFO) << "Number of bg(-) windows: " << bg_windows_.size();
 
   for (map<int, int>::iterator it = label_hist.begin();
       it != label_hist.end(); ++it) {
@@ -190,7 +192,7 @@ void WindowDataLayer<Dtype>::InternalThreadEntry() {
   const int batch_size = this->layer_param_.window_data_param().batch_size();
   const int context_pad = this->layer_param_.window_data_param().context_pad();
   const int crop_size = this->transform_param_.crop_size();
-  const bool mirror = this->transform_param_.mirror();
+  //const bool mirror = this->transform_param_.mirror();
   const float fg_fraction =
       this->layer_param_.window_data_param().fg_fraction();
   const Dtype* mean = this->data_mean_.cpu_data();
@@ -211,13 +213,15 @@ void WindowDataLayer<Dtype>::InternalThreadEntry() {
 
   int item_id = 0;
   // sample from bg set then fg set
-  static unsigned int iterno= 01;
-  iterno=iterno+1; //incremented in every function call
-  iterno=iterno-iterno%2; //accounting for the fact that there are 2 WINDOW_DATA layers
+  static unsigned int callcount= 01;
+  callcount=callcount+1; //incremented in every function call - NOT WORKING!
+  //bool stack1=((callcount%2)==1);
+  unsigned int iterno=callcount-(callcount%2); //accounting for the fact that there are 2 WINDOW_DATA layers
   //LOG(INFO) << "srand was initialized with iterno:"<< iterno << std::endl;
   //LOG(INFO) << "Rand sample (debug check):"<< rand() << std::endl;
   for (int is_fg = 0; is_fg < 2; ++is_fg) {
     for (int dummy = 0; dummy < num_samples[is_fg]; ++dummy) {
+
       srand(iterno+is_fg+dummy); 
       // sample a window
       //const unsigned int rand_index = PrefetchRand();
@@ -229,10 +233,6 @@ void WindowDataLayer<Dtype>::InternalThreadEntry() {
           fg_windows_[rand_index % fg_windows_.size()] :
           bg_windows_[rand_index % bg_windows_.size()];
 
-      bool do_mirror = false;
-      if (mirror && PrefetchRand() % 2) {
-        do_mirror = true;
-      }
 
       // load the image containing the window
       pair<std::string, vector<int> > image =
@@ -317,12 +317,6 @@ void WindowDataLayer<Dtype>::InternalThreadEntry() {
         pad_y2 = static_cast<int>(round(static_cast<Dtype>(pad_y2)*scale_y));
 
         pad_h = pad_y1;
-        // if we're mirroring, we mirror the padding too (to be pedantic)
-        if (do_mirror) {
-          pad_w = pad_x2;
-        } else {
-          pad_w = pad_x1;
-        }
 
         // ensure that the warped, clipped region plus the padding fits in the
         // crop_size x crop_size image (it might not due to rounding)
@@ -338,11 +332,6 @@ void WindowDataLayer<Dtype>::InternalThreadEntry() {
       cv::Mat cv_cropped_img = cv_img(roi);
       cv::resize(cv_cropped_img, cv_cropped_img,
           cv_crop_size, 0, 0, cv::INTER_LINEAR);
-
-      // horizontal flip at random
-      if (do_mirror) {
-        cv::flip(cv_cropped_img, cv_cropped_img, 1);
-      }
 
       // copy the warped window into top_data
       for (int c = 0; c < channels; ++c) {
