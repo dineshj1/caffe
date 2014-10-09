@@ -27,6 +27,7 @@
 *.mex*
 
 # build, distribute, and bins
+cudnn*
 build
 .build_jd_v0.1_release/*
 build_jd_v0.1
