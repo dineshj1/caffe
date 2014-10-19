@@ -84,3 +84,6 @@ docs/dev
 
 # CMake generated files
 *.gen.cmake
+
+# CuDNN library
+cudnn*
