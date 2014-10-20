@@ -220,7 +220,6 @@ class ContrastiveLossLayer : public LossLayer<Dtype> {
       vector<Blob<Dtype>*>* top);
 
   virtual inline int ExactNumBottomBlobs() const { return 3; }
-  virtual inline int ExactNumTopBlobs() const { return 2; }
   virtual inline LayerParameter_LayerType type() const {
     return LayerParameter_LayerType_CONTRASTIVE_LOSS;
   }
@@ -238,9 +237,7 @@ class ContrastiveLossLayer : public LossLayer<Dtype> {
       vector<Blob<Dtype>*>* top);
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top);
- 
+
   /**
    * @brief Computes the Contrastive error gradient w.r.t. the inputs.
    * 
@@ -276,7 +273,6 @@ class ContrastiveLossLayer : public LossLayer<Dtype> {
   Blob<Dtype> diff_sq_;  // tmp storage for gpu forward pass
   Blob<Dtype> summer_vec_;  // tmp storage for gpu forward pass
 };
-
 /**
  * @brief Computes the Euclidean (L2) loss @f$
  *          E = \frac{1}{2N} \sum\limits_{n=1}^N \left| \left| \hat{y}_n - y_n

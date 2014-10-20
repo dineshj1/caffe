@@ -25,8 +25,7 @@ class ContrastiveLossLayerTest : public MultiDeviceTest<TypeParam> {
       : blob_bottom_data_i_(new Blob<Dtype>(128, 10, 1, 1)),
         blob_bottom_data_j_(new Blob<Dtype>(128, 10, 1, 1)),
         blob_bottom_y_(new Blob<Dtype>(128, 1, 1, 1)),
-        blob_top_loss_0_(new Blob<Dtype>()),
-        blob_top_loss_1_(new Blob<Dtype>()){
+        blob_top_loss_(new Blob<Dtype>()) {
     // fill the values
     FillerParameter filler_param;
     filler_param.set_mean(0.0);
@@ -40,22 +39,19 @@ class ContrastiveLossLayerTest : public MultiDeviceTest<TypeParam> {
       blob_bottom_y_->mutable_cpu_data()[i] = caffe_rng_rand() % 2;  // 0 or 1
     }
     blob_bottom_vec_.push_back(blob_bottom_y_);
-    blob_top_vec_.push_back(blob_top_loss_0_);
-    blob_top_vec_.push_back(blob_top_loss_1_);
+    blob_top_vec_.push_back(blob_top_loss_);
   }
   virtual ~ContrastiveLossLayerTest() {
     delete blob_bottom_data_i_;
     delete blob_bottom_data_j_;
     delete blob_bottom_y_;
-    delete blob_top_loss_0_;
-    delete blob_top_loss_1_;
+    delete blob_top_loss_;
   }
 
   Blob<Dtype>* const blob_bottom_data_i_;
   Blob<Dtype>* const blob_bottom_data_j_;
   Blob<Dtype>* const blob_bottom_y_;
-  Blob<Dtype>* const blob_top_loss_0_;
-  Blob<Dtype>* const blob_top_loss_1_;
+  Blob<Dtype>* const blob_top_loss_;
   vector<Blob<Dtype>*> blob_bottom_vec_;
   vector<Blob<Dtype>*> blob_top_vec_;
 };
@@ -87,7 +83,7 @@ TYPED_TEST(ContrastiveLossLayerTest, TestForward) {
     }
   }
   loss /= static_cast<Dtype>(num) * Dtype(2);
-  EXPECT_NEAR(this->blob_top_loss_0_->cpu_data()[0], loss, 1e-6);
+  EXPECT_NEAR(this->blob_top_loss_->cpu_data()[0], loss, 1e-6);
 }
 
 TYPED_TEST(ContrastiveLossLayerTest, TestGradient) {
@@ -103,4 +99,4 @@ TYPED_TEST(ContrastiveLossLayerTest, TestGradient) {
       &(this->blob_top_vec_), 1);
 }
 
-}  // namespace caffe
+} // namespace caffe

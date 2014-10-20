@@ -21,18 +21,12 @@ void ContrastiveLossLayer<Dtype>::LayerSetUp(
   CHECK_EQ(bottom[2]->height(), 1);
   CHECK_EQ(bottom[2]->width(), 1);
   diff_.Reshape(bottom[0]->num(), bottom[0]->channels(), 1, 1);
+  diff_sq_.Reshape(bottom[0]->num(), bottom[0]->channels(), 1, 1);
   dist_sq_.Reshape(bottom[0]->num(), 1, 1, 1);
   // vector of ones used to sum along channels
   summer_vec_.Reshape(bottom[0]->channels(), 1, 1, 1);
   for (int i = 0; i < bottom[0]->channels(); ++i)
     summer_vec_.mutable_cpu_data()[i] = Dtype(1);
-}
-
-template <typename Dtype>
-void ContrastiveLossLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top) {
-   (*top)[0]->Reshape(1,1,1,1);
-   (*top)[1]->Reshape(bottom[0]->num(),bottom[0]->channels(),1,1);
 }
 
 template <typename Dtype>
@@ -44,15 +38,8 @@ void ContrastiveLossLayer<Dtype>::Forward_cpu(
       count,
       bottom[0]->cpu_data(),  // a
       bottom[1]->cpu_data(),  // b
-      diff_.mutable_cpu_data());  // diff_i = a_i-b_i
+      diff_.mutable_cpu_data());  // a_i-b_i
   const int channels = bottom[0]->channels();
-
-  caffe_mul(count, 
-            diff_.mutable_cpu_data(), 
-            diff_.mutable_cpu_data(),  
-            (*top)[1]->mutable_cpu_data());
-
-
   Dtype margin = this->layer_param_.contrastive_loss_param().margin();
   Dtype loss(0.0);
   for (int i = 0; i < bottom[0]->num(); ++i) {
@@ -66,13 +53,11 @@ void ContrastiveLossLayer<Dtype>::Forward_cpu(
   }
   loss = loss / static_cast<Dtype>(bottom[0]->num()) / Dtype(2);
   (*top)[0]->mutable_cpu_data()[0] = loss;
-  //(*top)[1]->mutable_cpu_data()[0] = loss;//TODO: This is done temporarily to solve the error in changing number of outputs first
 }
 
 template <typename Dtype>
 void ContrastiveLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom) {
-    //only takes gradient with respect to loss (not with respect to diff)
   Dtype margin = this->layer_param_.contrastive_loss_param().margin();
   for (int i = 0; i < 2; ++i) {
     if (propagate_down[i]) {
