@@ -149,7 +149,6 @@ class AccuracyLayer : public Layer<Dtype> {
   int top_k_;
 };
 
-
 /**
  * @brief An interface for Layer%s that take two Blob%s as input -- usually
  *        (1) predictions and (2) ground-truth labels -- and output a
@@ -273,6 +272,7 @@ class ContrastiveLossLayer : public LossLayer<Dtype> {
   Blob<Dtype> diff_sq_;  // tmp storage for gpu forward pass
   Blob<Dtype> summer_vec_;  // tmp storage for gpu forward pass
 };
+
 /**
  * @brief Computes the Euclidean (L2) loss @f$
  *          E = \frac{1}{2N} \sum\limits_{n=1}^N \left| \left| \hat{y}_n - y_n
