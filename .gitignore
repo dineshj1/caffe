@@ -27,10 +27,9 @@
 *.mex*
 
 # build, distribute, and bins
-cudnn*
 build
-.build_jd_v0.1_release/*
 build_jd_v0.1
+.build_jd_v0.1*
 .build_debug/*
 .build_release/*
 distribute/*
@@ -85,3 +84,10 @@ docs/dev
 
 # CMake generated files
 *.gen.cmake
+
+# CuDNN
+cudnn*
+
+# Swap files etc
+.*.sw*
+*.nfs*

@@ -454,6 +454,8 @@ bool UpgradeLayerParameter(const LayerParameter& v0_layer_connection,
 LayerParameter_LayerType UpgradeV0LayerType(const string& type) {
   if (type == "accuracy") {
     return LayerParameter_LayerType_ACCURACY;
+  } else if (type == "AP") {
+    return LayerParameter_LayerType_AP;
   } else if (type == "bnll") {
     return LayerParameter_LayerType_BNLL;
   } else if (type == "concat") {

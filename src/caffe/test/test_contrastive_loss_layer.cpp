@@ -99,4 +99,4 @@ TYPED_TEST(ContrastiveLossLayerTest, TestGradient) {
       &(this->blob_top_vec_), 1);
 }
 
-}  // namespace caffe
+} // namespace caffe

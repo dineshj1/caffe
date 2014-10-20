@@ -668,11 +668,11 @@ void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
         }
       } 
       if(foundSource ==1){
-          numMatches++;
+        numMatches++;
           LOG(INFO)<<"Matched";
-          // copy layers
+        // copy layers
           //LOG(INFO) << "Copying source layer " << source_layer_name;
-          vector<shared_ptr<Blob<Dtype> > >& target_blobs =
+        vector<shared_ptr<Blob<Dtype> > >& target_blobs =
             layers_[target_layer_id]->blobs();
         CHECK_EQ(target_blobs.size(), source_layer->blobs().size())
             << "Incompatible number of blobs for layer " << source_layer_name;
@@ -766,7 +766,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
           CHECK_EQ(target_blobs[j]->height(), source_layer.blobs(j).height());
           CHECK_EQ(target_blobs[j]->width(), source_layer.blobs(j).width());
           target_blobs[j]->FromProto(source_layer.blobs(j));
-        } 
+        }
       }
     }
 
