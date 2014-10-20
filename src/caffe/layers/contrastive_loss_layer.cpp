@@ -21,8 +21,6 @@ void ContrastiveLossLayer<Dtype>::LayerSetUp(
   CHECK_EQ(bottom[2]->height(), 1);
   CHECK_EQ(bottom[2]->width(), 1);
   diff_.Reshape(bottom[0]->num(), bottom[0]->channels(), 1, 1);
-  //(*top)[1].Reshape(bottom[0]->num(), bottom[0]->channels(), 1, 1);
-  //diff_sq_.Reshape(bottom[0]->num(), bottom[0]->channels(), 1, 1);
   dist_sq_.Reshape(bottom[0]->num(), 1, 1, 1);
   // vector of ones used to sum along channels
   summer_vec_.Reshape(bottom[0]->channels(), 1, 1, 1);
@@ -46,7 +44,7 @@ void ContrastiveLossLayer<Dtype>::Forward_cpu(
       count,
       bottom[0]->cpu_data(),  // a
       bottom[1]->cpu_data(),  // b
-      diff_.mutable_cpu_data());  // a_i-b_i
+      diff_.mutable_cpu_data());  // diff_i = a_i-b_i
   const int channels = bottom[0]->channels();
 
   caffe_mul(count, 
@@ -68,6 +66,7 @@ void ContrastiveLossLayer<Dtype>::Forward_cpu(
   }
   loss = loss / static_cast<Dtype>(bottom[0]->num()) / Dtype(2);
   (*top)[0]->mutable_cpu_data()[0] = loss;
+  //(*top)[1]->mutable_cpu_data()[0] = loss;//TODO: This is done temporarily to solve the error in changing number of outputs first
 }
 
 template <typename Dtype>
