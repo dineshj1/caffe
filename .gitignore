@@ -87,3 +87,6 @@ docs/dev
 
 # CuDNN library
 cudnn*
+
+# Swap files
+.*.sw*

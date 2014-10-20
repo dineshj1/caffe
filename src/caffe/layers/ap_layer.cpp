@@ -34,7 +34,8 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     vector<Blob<Dtype>*>* top) {
   const Dtype* bottom_scores = bottom[0]->cpu_data();// intended for now to be in the form of distances i.e. lower score => more likely to be positive
   const Dtype* bottom_label = bottom[1]->cpu_data();
-  int dim = bottom[0]->count()/bottom[0]->num(); //number of data points, in this case equal to the number of elements 
+  int dim = bottom[0]->count(); //number of data points, in this case equal to the number of elements 
+
   // number of positives and negatives
   double P=0, N=0;
 
@@ -47,6 +48,7 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           LOG(FATAL) << "Unknown label" << bottom_label;
       }
   }
+  //LOG(INFO) << "P:" << P <<", N:"<<N;
 
   //sorting 
   std::vector<std::pair<Dtype, int> > bottom_data_vector;
@@ -57,17 +59,28 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
   //setting up variables to be updated in loop
   double FP=0, TP=0, FP_prev=0, TP_prev=0;
-  double Prec=0, Rec=0, Prec_prev=0, Rec_prev=0;
+  double Prec=0, Rec=1, Prec_prev=0, Rec_prev=1;
   Dtype AP = 0, AUROC =0;
   Dtype score_prev=-1; // impossible to have negative values
   Dtype curr_score, curr_label;
-
+  //LOG(INFO)<<"dim :"<<dim;
+  //LOG(INFO)<<bottom_data_vector[0].first;
+  //LOG(INFO)<<bottom_data_vector[50].first;
+  //LOG(INFO)<<bottom_data_vector[dim-1].first;
   for(int k=0;k<dim; ++k){
     curr_score=bottom_data_vector[k].first;
     curr_label=bottom_data_vector[k].second;
     if(curr_score!=score_prev){// finalize numbers for the previous threshold
-        AUROC=AUROC+0.5*abs(FP_prev-FP)*(TP_prev+TP);//trapezoid area
-        AP=AP+0.5*abs(Rec_prev-Rec)*(Prec_prev+Prec);//trapezoid area
+        AUROC=AUROC+(0.5*fabs(FP_prev-FP)*(TP_prev+TP))/(P*N);//trapezoid area
+        //LOG(INFO)<<"FP:"<<FP_prev<<"->"<<FP;
+        //LOG(INFO)<<"TP:"<<TP_prev<<"->"<<TP;
+        //LOG(INFO)<<"Updated AUC:"<<AUROC;
+        AP=AP+0.5*fabs(Rec_prev-Rec)*(Prec_prev+Prec);//trapezoid area
+        //LOG(INFO)<<"Prec:"<<Prec<<"("<<Prec_prev<<")";
+        //LOG(INFO)<<"Rec:"<<Rec<<"("<<Rec_prev<<")";
+        //LOG(INFO)<<"Delta Rec:"<<fabs(Rec_prev-Rec);
+        //LOG(INFO)<<"Prec_prev+Prec:"<<Prec_prev+Prec;
+        //LOG(INFO)<<"Updated AP:"<<AP;
         score_prev=curr_score;
         FP_prev=FP;
         TP_prev=TP;
@@ -83,17 +96,20 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }else{
         LOG(FATAL)<<"Unknown label "<< curr_label;
     }
+    Prec=TP/(TP+FP);
+    Rec=TP/P; 
   }
-  Prec=TP/(TP+FP);
-  Rec=TP/P;
-  AP = AP+0.5*abs(1-Rec_prev)*(1+Prec_prev);//Last trapezoid area 
-  AUROC=AUROC+0.5*abs(1-FP_prev)*(1+TP_prev);//Last trapezoid area
-  AUROC=AUROC/(P*N);
+  //LOG(INFO) << "AP:" << AP;
+  AP = AP+0.5*fabs(1-Rec_prev)*(0+Prec_prev);//Last trapezoid area 
+  AUROC=AUROC+0.5*fabs(N-FP_prev)*(P+TP_prev)/(P*N);//Last trapezoid area
+  if(AUROC>1){
+    LOG(FATAL)<<"AUROC>1";
+  }
 
-  LOG(INFO) << "AP" << AP;
-  (*top)[1]->mutable_cpu_data()[0] = AP;
-  LOG(INFO) << "AUROC" << AUROC;
-  (*top)[1]->mutable_cpu_data()[1] = AUROC;
+  //LOG(INFO) << "AP:" << AP;
+  (*top)[0]->mutable_cpu_data()[0] = AP;
+  //LOG(INFO) << "AUROC:" << AUROC;
+  (*top)[1]->mutable_cpu_data()[0] = AUROC;
   // AP layer should not be used as a loss function.
 }
 
