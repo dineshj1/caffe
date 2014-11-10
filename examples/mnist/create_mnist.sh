@@ -4,7 +4,7 @@
 
 EXAMPLE=examples/mnist
 DATA=data/mnist
-BUILD=build/examples/mnist
+BUILD=build_jd_v0.1/examples/mnist
 
 BACKEND="lmdb"
 
