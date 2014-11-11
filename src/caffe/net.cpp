@@ -651,7 +651,7 @@ void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
 
       //DLOG(INFO) << "Target #" << target_layer_id<<": "<<layer_names_[target_layer_id];
       std::string target_layer_name=layer_names_[target_layer_id]; 
-      LOG(INFO)<<"Testing against target layer name: "<<target_layer_name;
+      DLOG(INFO)<<"Testing against target layer name: "<<target_layer_name;
       if (layer_names_[target_layer_id] == source_layer_name) {
         foundSource=1;
       } else { //taking care of layers marked as copy layers
@@ -659,7 +659,7 @@ void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
         std::size_t found = new_target_layer_name.find_last_of("%^$");//defining characters that can be used to mark copy layer                                         
         while(found!=std::string::npos){ //to allow adding any number of such tags
           new_target_layer_name=new_target_layer_name.substr(0,found);
-          LOG(INFO)<<"Testing against reduced target layer name: "<<new_target_layer_name;
+          DLOG(INFO)<<"Testing against reduced target layer name: "<<new_target_layer_name;
           if (new_target_layer_name == source_layer_name) {
             foundSource=1;
             break; //once matched, enough done
@@ -669,7 +669,7 @@ void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
       } 
       if(foundSource ==1){
         numMatches++;
-          LOG(INFO)<<"Matched";
+          LOG(INFO)<<"Matched to "<<target_layer_name;
         // copy layers
           //LOG(INFO) << "Copying source layer " << source_layer_name;
         vector<shared_ptr<Blob<Dtype> > >& target_blobs =
@@ -735,7 +735,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
  
       //DLOG(INFO) << "Target #" << target_layer_id<<": "<<layer_names_[target_layer_id];
       std::string target_layer_name=layer_names_[target_layer_id];
-      LOG(INFO)<<"Testing against target layer name: "<<target_layer_name;
+      DLOG(INFO)<<"Testing against target layer name: "<<target_layer_name;
       if (target_layer_name == source_layer_name) {
         foundSource=1;
       } else { //taking care of layers marked as copy layers
@@ -743,7 +743,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
         std::size_t found = new_target_layer_name.find_last_of("%^$");//defining characters that can be used to mark copy layer                                         
         while(found!=std::string::npos){ //to allow adding any number of such tags
           new_target_layer_name=new_target_layer_name.substr(0,found);
-          LOG(INFO)<<"Testing against reduced target layer name: "<<new_target_layer_name;
+          DLOG(INFO)<<"Testing against reduced target layer name: "<<new_target_layer_name;
           if (new_target_layer_name == source_layer_name) {
             foundSource=1;
             break; //once matched, enough done
@@ -753,7 +753,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
       }   
       if(foundSource==1){
         numMatches++;
-        LOG(INFO)<<"Matched";
+        LOG(INFO)<<"Matched to "<<target_layer_name;
         // copy layers
         //LOG(INFO) << "Copying source layer " << source_layer_name;
         vector<shared_ptr<Blob<Dtype> > >& target_blobs =
