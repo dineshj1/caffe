@@ -238,6 +238,13 @@ void WindowDataLayer<Dtype>::InternalThreadEntry() {
       pair<std::string, vector<int> > image =
           image_database_[window[WindowDataLayer<Dtype>::IMAGE_INDEX]];
 
+      //if(dummy==0 && is_fg==1){// first fg data sample
+      //LOG(INFO)<<"Rand fg index:"<< rand_index % fg_windows_.size()<<" of "<<fg_windows_.size()<<"("<<image.first<<")";
+      //}
+      //if(dummy==0 && is_fg==0){// first bg data sample
+      //LOG(INFO)<<"Rand bg index:"<< rand_index % bg_windows_.size()<<" of "<<bg_windows_.size()<<"("<<image.first<<")";
+      //}
+ 
       cv::Mat cv_img = cv::imread(image.first, CV_LOAD_IMAGE_COLOR);
       if (!cv_img.data) {
         LOG(ERROR) << "Could not open or find file " << image.first;
