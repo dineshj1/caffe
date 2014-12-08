@@ -59,11 +59,11 @@ int main(int argc, char** argv) {
 
   bool is_color = !FLAGS_gray;
   std::ifstream infile(argv[2]);
-  std::vector<std::pair<string, int> > lines;
+  std::vector<std::pair<std::pair<string, string>, int> > lines;
   string filename1, filename2;
   int label;
   while (infile >> filename1 >> filename2 >> label) {
-    lines.push_back(std::make_pair(std::makepair(filename1, filename2), label));
+    lines.push_back(std::make_pair(std::make_pair(filename1, filename2), label));
   }
   if (FLAGS_shuffle) {
     // randomly shuffle data
