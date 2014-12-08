@@ -1,11 +1,11 @@
-// This program converts a set of images to a lmdb/leveldb by storing them
+// This program converts a set of image pairs to a lmdb/leveldb by storing them
 // as Datum proto buffers.
 // Usage:
 //   convert_imageset [FLAGS] ROOTFOLDER/ LISTFILE DB_NAME
 //
 // where ROOTFOLDER is the root folder that holds all the images, and LISTFILE
 // should be a list of files as well as their labels, in the format as
-//   subfolder1/file1.JPEG 7
+//   subfolder1/file1.JPEG subfolder2/file2.JPEG 7
 //   ....
 
 #include <gflags/gflags.h>
@@ -60,17 +60,17 @@ int main(int argc, char** argv) {
   bool is_color = !FLAGS_gray;
   std::ifstream infile(argv[2]);
   std::vector<std::pair<string, int> > lines;
-  string filename;
+  string filename1, filename2;
   int label;
-  while (infile >> filename >> label) {
-    lines.push_back(std::make_pair(filename, label));
+  while (infile >> filename1 >> filename2 >> label) {
+    lines.push_back(std::make_pair(std::makepair(filename1, filename2), label));
   }
   if (FLAGS_shuffle) {
     // randomly shuffle data
     LOG(INFO) << "Shuffling data";
     shuffle(lines.begin(), lines.end());
   }
-  LOG(INFO) << "A total of " << lines.size() << " images.";
+  LOG(INFO) << "A total of " << lines.size() << " image pairs.";
 
   const string& db_backend = FLAGS_backend;
   const char* db_path = argv[3];
@@ -127,8 +127,10 @@ int main(int argc, char** argv) {
   bool data_size_initialized = false;
 
   for (int line_id = 0; line_id < lines.size(); ++line_id) {
-    if (!ReadImageToDatum(root_folder + lines[line_id].first,
-        lines[line_id].second, resize_height, resize_width, is_color, &datum)) {
+    if (!ReadImagePairToDatum(root_folder + lines[line_id].first.first,
+                              root_folder + lines[line_id].first.second,
+                              lines[line_id].second, resize_height,
+                              resize_width, is_color, &datum)) {
       continue;
     }
     if (!data_size_initialized) {
@@ -140,8 +142,9 @@ int main(int argc, char** argv) {
           << data.size();
     }
     // sequential
-    snprintf(key_cstr, kMaxKeyLength, "%08d_%s", line_id,
-        lines[line_id].first.c_str());
+    snprintf(key_cstr, kMaxKeyLength, "%08d_%s_%s", line_id,
+        lines[line_id].first.first.c_str(), 
+        lines[line_id].first.second.c_str());
     string value;
     datum.SerializeToString(&value);
     string keystr(key_cstr);
