@@ -43,8 +43,6 @@ void convert_dataset(const char* image_filename, const char* label_filename,
   uint32_t num_labels;
   uint32_t rows;
   uint32_t cols;
-  // Q: how to write the image files? A: explained on the mnist download
-  // webpage, but this need not be the format we use
 
   image_file.read(reinterpret_cast<char*>(&magic), 4);
   magic = swap_endian(magic);
@@ -86,8 +84,6 @@ void convert_dataset(const char* image_filename, const char* label_filename,
   LOG(INFO) << "A total of " << num_items << " items.";
   LOG(INFO) << "Rows: " << rows << " Cols: " << cols;
   for (int itemid = 0; itemid < num_items; ++itemid) {
-      // Weird: Why should number of random image pairs be equal to the number of
-      // original images i.e. num_items?
     int i = caffe::caffe_rng_rand() % num_items;  // pick a random  pair
     int j = caffe::caffe_rng_rand() % num_items;
     read_image(&image_file, &label_file, i, rows, cols,
