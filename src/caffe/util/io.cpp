@@ -159,8 +159,8 @@ bool ReadImagePairToDatum(const string& filename1, const string& filename2, cons
     }
   } else {  // Faster than repeatedly testing is_color for each pixel w/i loop
     for (int c = 0; c < num_channels; ++c) {
-      for (int h = 0; h < cv_img.rows; ++h) {
-        for (int w = 0; w < cv_img.cols; ++w) {
+      for (int h = 0; h < cv_img1.rows; ++h) {
+        for (int w = 0; w < cv_img1.cols; ++w) {
           if (c==0) {
               datum_string->push_back(
                 static_cast<char>(cv_img1.at<uchar>(h, w)));
