@@ -27,7 +27,8 @@
 *.mex*
 
 # build, distribute, and bins
-build
+build*
+.build*
 .build_debug/*
 .build_release/*
 distribute/*
@@ -82,3 +83,6 @@ docs/dev
 
 # CMake generated files
 *.gen.cmake
+
+# cudnn
+cudnn*
