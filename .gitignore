@@ -27,9 +27,8 @@
 *.mex*
 
 # build, distribute, and bins
-build
-build_jd_v0.1
-.build_jd_v0.1*
+build*
+.build*
 .build_debug/*
 .build_release/*
 distribute/*
@@ -87,7 +86,3 @@ docs/dev
 
 # CuDNN
 cudnn*
-
-# Swap files etc
-.*.sw*
-*.nfs*
