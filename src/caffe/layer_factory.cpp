@@ -257,6 +257,8 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
     return new WindowDataLayer<Dtype>(param);
   case LayerParameter_LayerType_WINDOWPAIR_DATA:
     return new WindowPairDataLayer<Dtype>(param);
+  case LayerParameter_LayerType_THRESHOLD:
+    return new ThresholdLayer<Dtype>(param);
   case LayerParameter_LayerType_NONE:
     LOG(FATAL) << "Layer " << name << " has unspecified type.";
   default:
