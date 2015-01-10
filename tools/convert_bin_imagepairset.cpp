@@ -55,52 +55,70 @@ int main(int argc, char** argv) {
   bool is_color = !FLAGS_gray;
 
   //reading dat file demo
+  std::cout<<"=========================================="<<std::endl;
   std::ifstream datfile(argv[1], ios::binary|ios::in);
-  unsigned int *tmp;
-  tmp = new unsigned int;
-  datfile.seekg(16);
-  datfile.read((char *)tmp, 4);
-  unsigned int ht=*tmp;
-  datfile.read((char *)tmp, 4);
-  unsigned int wd=*tmp;
-  std::cout<<"ht:"<<ht<<",wd:"<<wd<<std::endl;
-  unsigned int sz=ht*wd;
-  delete tmp;
-  unsigned char *im1, *im2; 
-  im1 = new unsigned char[sz];
-  im2 = new unsigned char[sz]; 
-  std::cout<<"Reading image 1"<<std::endl;
-  datfile.read((char *)im1, sz);
-  std::cout<<"Reading image 2"<<std::endl; //useless perturbed image 
-  datfile.read((char *)im2, sz);
-  std::cout<<"Done"<<std::endl;
-  datfile.close();
-  delete im1;
-  delete im2;
+  if(!datfile.fail()){
+      unsigned int *tmp;
+      tmp = new unsigned int;
+      datfile.seekg(16);
+      datfile.read((char *)tmp, 4);
+      unsigned int ht=*tmp;
+      datfile.read((char *)tmp, 4);
+      unsigned int wd=*tmp;
+      std::cout<<"ht:"<<ht<<",wd:"<<wd<<std::endl;
+      unsigned int sz=ht*wd;
+      delete tmp;
+      unsigned char *im1, *im2; 
+      im1 = new unsigned char[sz];
+      im2 = new unsigned char[sz]; 
+      std::cout<<"Reading image 1"<<std::endl;
+      datfile.read((char *)im1, sz);
+      std::cout<<"Reading image 2"<<std::endl; //useless perturbed image 
+      datfile.read((char *)im2, sz);
+      std::cout<<"Done"<<std::endl;
+      datfile.close();
+      delete im1;
+      delete im2;
+  } else{
+      std::cout<<"Unable to open datfile!" <<std::endl;
+  }
+  std::cout<<"=========================================="<<std::endl;
 
   //reading cat file demo
+  std::cout<<"=========================================="<<std::endl;
   std::ifstream catfile(argv[2], ios::binary|ios::in);
-  catfile.seekg(20);
-  int *label;
-  label = new int;
-  for(int i=0; i<10; i++){
-      catfile.read((char *)label, 4); // reading 4 bits into one integer 
-      std::cout<<*label<<std::endl;
-  }
-  delete label;
-  catfile.close();
+  if(!catfile.fail()){
+      catfile.seekg(20);
+      int *label;
+      label = new int;
+      for(int i=0; i<10; i++){
+          catfile.read((char *)label, 4); // reading 4 bits into one integer (assuming little-endian CPU) 
+          std::cout<<*label<<std::endl;
+      }
+      delete label;
+      catfile.close();
+  } else{
+      std::cout<<"Unable to open catfile!" <<std::endl;
+  } 
+  std::cout<<"=========================================="<<std::endl;
  
   //reading info file demo
+  std::cout<<"=========================================="<<std::endl;
   std::ifstream infofile(argv[3], ios::binary|ios::in);
-  infofile.seekg(20);
-  int *label1;
-  label1 = new int[10];
-  for(int i=0; i<10; i++){
-      infofile.read((char *)label1, 4); // reading 4 bits into one integer 
-      std::cout<<*label1<<std::endl;
+  if(!infofile.fail()){
+      infofile.seekg(20);
+      int *label1;
+      label1 = new int;
+      for(int i=0; i<10; i++){
+          infofile.read((char *)label1, 4); // reading 4 bits into one integer (assuming little-endian CPU)
+          std::cout<<*label1<<std::endl;
+      }
+      delete label1;
+      infofile.close();
+  } else{
+      std::cout<<"Unable to open infofile!" << std::endl;
   }
-  delete label1;
-  infofile.close();
+  std::cout<<"=========================================="<<std::endl;
  
 
   //char * tmp;
