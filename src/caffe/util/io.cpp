@@ -111,6 +111,72 @@ bool ReadImageToDatum(const string& filename, const int label,
   return true;
 }
 
+bool StoreImagePairToDatum(unsigned char* im1, unsigned char* im2, int dummylabel,
+    const int height, const int width, const bool is_color, Datum* datum) {
+  //cv::Mat cv_img1, cv_img2;
+  //int cv_read_flag = (is_color ? CV_LOAD_IMAGE_COLOR :
+  //  CV_LOAD_IMAGE_GRAYSCALE);
+
+  //cv::Mat cv_img1_origin = cv::imread(filename1, cv_read_flag);
+  //cv::Mat cv_img2_origin = cv::imread(filename2, cv_read_flag);
+  //if (!cv_img1_origin.data) {
+  //  LOG(ERROR) << "Could not open or find file " << filename1;
+  //  return false;
+  //}
+  //if (!cv_img2_origin.data) {
+  //  LOG(ERROR) << "Could not open or find file " << filename2;
+  //  return false;
+  //}
+  //if (height > 0 && width > 0) {
+  //  cv::resize(cv_img1_origin, cv_img1, cv::Size(width, height));
+  //  cv::resize(cv_img2_origin, cv_img2, cv::Size(width, height));
+  //} else {
+  //  cv_img1 = cv_img1_origin;
+  //  cv_img2 = cv_img2_origin;
+  //}
+
+  int num_channels = (is_color ? 3 : 1)*2;
+  datum->set_channels(num_channels);
+  datum->set_height(height);
+  datum->set_width(width);
+  datum->set_label(dummylabel); //TODO Must see how to set this to be a vector
+  datum->clear_data();
+  datum->clear_float_data();
+  string* datum_string = datum->mutable_data();
+  if (is_color) {
+    std::cout<<"Error: I don't know how to handle color images yet!"<<std::endl;
+    return false;
+    //for (int c = 0; c < num_channels; ++c) {
+    //  for (int h = 0; h < height; ++h) {
+    //    for (int w = 0; w < width; ++w) {
+    //      if (c<3) {
+    //      datum_string->push_back(// how are images encoded n
+    //        static_cast<char>(cv_img1.at<cv::Vec3b>(h, w)[c]));
+    //      } else {
+    //       datum_string->push_back(
+    //        static_cast<char>(cv_img2.at<cv::Vec3b>(h, w)[c]));
+    //      }
+    //    }
+    //  }
+    //}
+  } else {  // Faster than repeatedly testing is_color for each pixel w/i loop
+    for (int c = 0; c < num_channels; ++c) {
+      for (int h = 0; h < height; ++h) {
+        for (int w = 0; w < width; ++w) {
+          if (c==0) { // im is stored in row-major format
+              datum_string->push_back(
+                static_cast<char>(im1[h*width+w]));
+          } else {
+               datum_string->push_back(
+                static_cast<char>(im2[h*width+w]));
+          }    
+        }
+      }
+    }
+  }
+  return true;
+}
+
 bool ReadImagePairToDatum(const string& filename1, const string& filename2, const int label,
     const int height, const int width, const bool is_color, Datum* datum) {
   cv::Mat cv_img1, cv_img2;
@@ -135,7 +201,7 @@ bool ReadImagePairToDatum(const string& filename1, const string& filename2, cons
     cv_img2 = cv_img2_origin;
   }
 
-  int num_channels = (is_color ? 3 : 1)*2;
+  int num_channels = (is_color ? 3 : 1)*2;//because we are going to store the two images as channels
   datum->set_channels(num_channels);
   datum->set_height(cv_img1.rows);
   datum->set_width(cv_img1.cols);
@@ -150,7 +216,7 @@ bool ReadImagePairToDatum(const string& filename1, const string& filename2, cons
           if (c<3) {
           datum_string->push_back(
             static_cast<char>(cv_img1.at<cv::Vec3b>(h, w)[c]));
-          } else {
+          } else {//last three channels are for the second image 
            datum_string->push_back(
             static_cast<char>(cv_img2.at<cv::Vec3b>(h, w)[c]));
           }
@@ -164,7 +230,7 @@ bool ReadImagePairToDatum(const string& filename1, const string& filename2, cons
           if (c==0) {
               datum_string->push_back(
                 static_cast<char>(cv_img1.at<uchar>(h, w)));
-          } else {
+          } else { //last channel is for the second image
                datum_string->push_back(
                 static_cast<char>(cv_img2.at<uchar>(h, w)));
           }    

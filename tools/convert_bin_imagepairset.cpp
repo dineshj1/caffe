@@ -77,6 +77,12 @@ int main(int argc, char** argv) {
       datfile.read((char *)im2, sz);
       std::cout<<"Done"<<std::endl;
       datfile.close();
+ 
+  Datum datum;
+  int dummylabel=0;
+  StoreImagePairToDatum(im1, im2, dummylabel, ht,
+                            wd, is_color, &datum);
+ 
       delete im1;
       delete im2;
   } else{
@@ -119,23 +125,6 @@ int main(int argc, char** argv) {
       std::cout<<"Unable to open infofile!" << std::endl;
   }
   std::cout<<"=========================================="<<std::endl;
- 
-
-  //char * tmp;
-  //tmp = new char[4];
-
-  //datfile.read(tmp, 4);
-  //std::cout<<(int)static_cast<unsigned char>(tmp[0])<<","<<(int)static_cast<unsigned char>(tmp[1])<<","<<(int)static_cast<unsigned char>(tmp[2])<<","<<(int)static_cast<unsigned char>(tmp[3])<<std::endl;
-  //datfile.read(tmp, 4);
-  //std::cout<<(int)static_cast<unsigned char>(tmp[0])<<","<<(int)static_cast<unsigned char>(tmp[1])<<","<<(int)static_cast<unsigned char>(tmp[2])<<","<<(int)static_cast<unsigned char>(tmp[3])<<std::endl;
-  //datfile.read(tmp, 4);
-  //std::cout<<(int)static_cast<unsigned char>(tmp[0])<<","<<(int)static_cast<unsigned char>(tmp[1])<<","<<(int)static_cast<unsigned char>(tmp[2])<<","<<(int)static_cast<unsigned char>(tmp[3])<<std::endl;
-  //datfile.read(tmp, 4);
-  //std::cout<<(int)static_cast<unsigned char>(tmp[0])<<","<<(int)static_cast<unsigned char>(tmp[1])<<","<<(int)static_cast<unsigned char>(tmp[2])<<","<<(int)static_cast<unsigned char>(tmp[3])<<std::endl;
-  //datfile.read(tmp, 4);
-  //std::cout<<(int)static_cast<unsigned char>(tmp[0])<<","<<(int)static_cast<unsigned char>(tmp[1])<<","<<(int)static_cast<unsigned char>(tmp[2])<<","<<(int)static_cast<unsigned char>(tmp[3])<<std::endl;
-  //datfile.read(tmp, 4);
-  //std::cout<<(int)static_cast<unsigned char>(tmp[0])<<","<<(int)static_cast<unsigned char>(tmp[1])<<","<<(int)static_cast<unsigned char>(tmp[2])<<","<<(int)static_cast<unsigned char>(tmp[3])<<std::endl;
  
 
   //std::vector<std::pair<std::pair<string, string>, int> > lines;
@@ -196,7 +185,7 @@ int main(int argc, char** argv) {
   //  LOG(FATAL) << "Unknown db backend " << db_backend;
   //}
 
-  //// Storing to db
+ //// Storing to db
   //string root_folder(argv[1]);
   //Datum datum;
   //int count = 0;

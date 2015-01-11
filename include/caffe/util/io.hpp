@@ -118,6 +118,23 @@ inline bool ReadImagePairToDatum(const string& filename1, const string& filename
   return ReadImagePairToDatum(filename1, filename2, label, 0, 0, datum);
 }
 
+bool StoreImagePairToDatum(unsigned char* im1, unsigned char* im2, 
+                          const int label, const int height, const int width, 
+                          const bool is_color, Datum* datum);
+
+inline bool StoreImagePairToDatum(unsigned char* im1, unsigned char* im2,  
+                          const int label, const int height, const int width, 
+                          Datum* datum){
+  return StoreImagePairToDatum(im1, im2, label, height, width, 
+                              true, datum);
+}
+
+inline bool StoreImagePairToDatum(unsigned char* im1, unsigned char* im2,   
+                                 const int label, Datum* datum) {
+  return StoreImagePairToDatum(im1, im2, label, 0, 0, datum);
+}
+ 
+
 leveldb::Options GetLevelDBOptions();
 
 template <typename Dtype>
