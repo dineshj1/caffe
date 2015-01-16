@@ -1,0 +1,1 @@
+/scratch/vision/dineshj/slowLearn/src/mnist_data_suite/train_mtl.h5
