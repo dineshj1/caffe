@@ -47,6 +47,7 @@ python/caffe/proto/
 
 # User's build configuration
 Makefile.config
+Makefile.config.matt
 
 # Data and models are either
 # 1. reference, and not casually committed
@@ -84,5 +85,5 @@ docs/dev
 # CMake generated files
 *.gen.cmake
 
-# CuDNN
+# cudnn
 cudnn*
