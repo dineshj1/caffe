@@ -1,4 +1,7 @@
 ## General
+*.orig
+*.nfs*
+ 
 
 # Compiled Object files
 *.slo
