@@ -34,9 +34,9 @@ class EuclideanDistLayer : public LossLayer<Dtype> {
       vector<Blob<Dtype>*>* top);
 
   virtual inline int ExactNumBottomBlobs() const { return 2; }
-  virtual inline LayerParameter_LayerType type() const {
-    return LayerParameter_LayerType_EUCLIDEAN_DIST;
-  }
+  //virtual inline LayerParameter_LayerType type() const {
+  //  return LayerParameter_LayerType_EUCLIDEAN_DIST;
+  //}
 
  protected:
   /// @copydoc EuclideanDistLayer

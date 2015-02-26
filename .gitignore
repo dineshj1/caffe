@@ -70,6 +70,8 @@ models/*
 # build, distribute, and bins (+ python proto bindings)
 build
 build_jd_v0.1
+build_jd_dev
+.build_jd_dev_release/*
 .build_debug/*
 .build_release/*
 .build_jd_v0.1_release/*

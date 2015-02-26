@@ -32,9 +32,9 @@ class APLayer : public Layer<Dtype> {
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top);
 
-  virtual inline LayerParameter_LayerType type() const {
-    return LayerParameter_LayerType_AP;
-  }
+  //virtual inline LayerParameter_LayerType type() const {
+  //  return LayerParameter_LayerType_AP;
+  //}
 
   virtual inline int ExactNumBottomBlobs() const { return 2; } // takes in scores and labels
   virtual inline int ExactNumTopBlobs() const { return 2; } // returns AP and AUROC

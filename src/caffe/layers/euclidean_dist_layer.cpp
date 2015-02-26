@@ -10,7 +10,7 @@ namespace caffe {
 
 template <typename Dtype>
 void EuclideanDistLayer<Dtype>::LayerSetUp(
-  const vector<Blob<Dtype>*>& bottom, vector<Blob<Dtype>*>* top) {
+  const vector<Blob<Dtype>*>& bottom, vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::LayerSetUp(bottom, top);
   CHECK_EQ(bottom[0]->channels(), bottom[1]->channels());
   CHECK_EQ(bottom[0]->height(), 1);
@@ -72,5 +72,6 @@ STUB_GPU(EuclideanDistLayer);
 #endif
 
 INSTANTIATE_CLASS(EuclideanDistLayer);
+REGISTER_LAYER_CLASS(EuclideanDist);
 
 }  // namespace caffe

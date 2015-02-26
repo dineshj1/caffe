@@ -332,9 +332,9 @@ class WindowPairDataLayer : public BasePrefetchingDataLayer<Dtype> {
   virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top);
 
-  virtual inline LayerParameter_LayerType type() const {
-    return LayerParameter_LayerType_WINDOW_DATA;
-  }
+  //virtual inline LayerParameter_LayerType type() const {
+  //  return LayerParameter_LayerType_WINDOW_DATA;
+  //}
   virtual inline int ExactNumBottomBlobs() const { return 0; }
   virtual inline int ExactNumTopBlobs() const { return 3; }
 
