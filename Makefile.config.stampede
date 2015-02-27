@@ -57,8 +57,10 @@ PYTHON_INCLUDE := $(ANACONDA_PATH)/include \
 # PYTHON_LIB := /usr/lib 
 PYTHON_LIB := $(ANACONDA_PATH)/lib
 
-TACC_BOOST_INC := /opt/apps/intel13/boost/1.55.0/x86_64/include/
-TACC_BOOST_LIB := /opt/apps/intel13/boost/1.55.0/x86_64/lib/
+#TACC_BOOST_INC := /opt/apps/intel13/boost/1.55.0/x86_64/include/
+#TACC_BOOST_LIB := /opt/apps/intel13/boost/1.55.0/x86_64/lib/
+TACC_BOOST_INC := /opt/apps/hoomd/0.11.2/boost_1_55_0/include/
+TACC_BOOST_LIB := /opt/apps/hoomd/0.11.2/boost_1_55_0/lib/ 
 TACC_OPENCV_INC := /opt/apps/intel13/opencv/2.4.6.1/include/
 TACC_OPENCV_LIB := /opt/apps/intel13/opencv/2.4.6.1/lib/
 TACC_ICC_LIB := /opt/apps/intel/13/composer_xe_2013.2.146/compiler/lib/intel64/
