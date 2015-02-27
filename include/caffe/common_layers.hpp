@@ -26,36 +26,33 @@ namespace caffe {
  *   -# @f$ (N \times 1 \times 1 \times 1) @f$
  */
 template <typename Dtype>
-class EuclideanDistLayer : public LossLayer<Dtype> {
+class EuclideanDistLayer : public Layer<Dtype> {
  public:
   explicit EuclideanDistLayer(const LayerParameter& param)
-      : LossLayer<Dtype>(param), diff_() {}
+      : Layer<Dtype>(param), diff_() {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top);
-
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
   virtual inline int ExactNumBottomBlobs() const { return 2; }
-  //virtual inline LayerParameter_LayerType type() const {
-  //  return LayerParameter_LayerType_EUCLIDEAN_DIST;
-  //}
+  virtual inline const char* type() const { return "EuclideanDist"; }
 
  protected:
   /// @copydoc EuclideanDistLayer
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top);
+      const vector<Blob<Dtype>*>& top);
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top);
+      const vector<Blob<Dtype>*>& top);
  
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom);
+   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom);
-
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+ 
   Blob<Dtype> diff_;  // cached for backward pass
   //Blob<Dtype> dist_sq_;  // cached for backward pass
-  Blob<Dtype> diff_sq_;  
-  Blob<Dtype> summer_vec_;  
+  //Blob<Dtype> diff_sq_;  
+  //Blob<Dtype> summer_vec_;  
 }; 
 
 /**

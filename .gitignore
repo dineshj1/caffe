@@ -1,6 +1,7 @@
 ## General
 *.orig
 *.nfs*
+*.log
 cudnn*
  
 

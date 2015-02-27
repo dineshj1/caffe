@@ -63,24 +63,12 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   Dtype AP = 0, AUROC =0;
   Dtype score_prev=-1; // impossible to have negative values
   Dtype curr_score, curr_label;
-  //LOG(INFO)<<"dim :"<<dim;
-  //LOG(INFO)<<bottom_data_vector[0].first;
-  //LOG(INFO)<<bottom_data_vector[50].first;
-  //LOG(INFO)<<bottom_data_vector[dim-1].first;
   for(int k=0;k<dim; ++k){
     curr_score=bottom_data_vector[k].first;
     curr_label=bottom_data_vector[k].second;
     if(curr_score!=score_prev){// finalize numbers for the previous threshold
         AUROC=AUROC+(0.5*fabs(FP_prev-FP)*(TP_prev+TP)/(P*N));//trapezoid area
-        //LOG(INFO)<<"FP:"<<FP_prev<<"->"<<FP;
-        //LOG(INFO)<<"TP:"<<TP_prev<<"->"<<TP;
-        //LOG(INFO)<<"Updated AUROC:"<<AUROC;
         AP=AP+0.5*fabs(Rec_prev-Rec)*(Prec_prev+Prec);//trapezoid area
-        //LOG(INFO)<<"Prec:"<<Prec<<"("<<Prec_prev<<")";
-        //LOG(INFO)<<"Rec:"<<Rec<<"("<<Rec_prev<<")";
-        //LOG(INFO)<<"Delta Rec:"<<fabs(Rec_prev-Rec);
-        //LOG(INFO)<<"Prec_prev+Prec:"<<Prec_prev+Prec;
-        //LOG(INFO)<<"Updated AP:"<<AP;
         score_prev=curr_score;
         FP_prev=FP;
         TP_prev=TP;
@@ -89,21 +77,16 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
     if(curr_label==1){
         TP=TP+1;
-        //LOG(INFO)<<"TP";
     }else if(curr_label==0){
-        //LOG(INFO)<<"FP";
         FP=FP+1;
     }else{
         LOG(FATAL)<<"Unknown label "<< curr_label;
     }
     Prec=TP/(TP+FP);
     Rec=TP/P; 
-    //LOG(INFO)<<"Prec: "<<Prec<<", Rec: "<<Rec;
   }
-  //LOG(INFO) << "AP:" << AP;
   AP = AP+0.5*fabs(1-Rec_prev)*(0+Prec_prev);//Last trapezoid area 
   AUROC=AUROC+(0.5*fabs(N-FP_prev)*(P+TP_prev)/(P*N));//Last trapezoid area
-  //LOG(INFO)<<"Completing AUROC:"<<AUROC;
   if(AUROC-1.0>1e-5){
     LOG(INFO)<<"AUROC greater than 1 by:"<<AUROC-1;
     //LOG(INFO)<<"AUROC>1";
@@ -121,10 +104,7 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       AP=1.0;
   }
  
-
-  //LOG(INFO) << "AP:" << AP;
   (*top)[0]->mutable_cpu_data()[0] = AP;
-  //LOG(INFO) << "AUROC:" << AUROC;
   (*top)[1]->mutable_cpu_data()[0] = AUROC;
   // AP layer should not be used as a loss function.
 }
