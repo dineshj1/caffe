@@ -503,26 +503,6 @@ $(PROTO_BUILD_DIR)/%.pb.o: $(PROTO_BUILD_DIR)/%.pb.cc $(PROTO_GEN_HEADER) \
 		| $(PROTO_BUILD_DIR)
 	@ echo CXX $<
 	$(Q)$(CXX) $< $(CXXFLAGS) -c -o $@ 2> $@.$(WARNS_EXT) \
-<<<<<<< HEAD
-		|| (cat $@.$(WARNS_EXT); exit 1)
-	@ cat $@.$(WARNS_EXT)
-
-$(BUILD_DIR)/cuda/%.o: %.cu | $(ALL_BUILD_DIRS)
-	@ echo NVCC $<
-	$(Q)$(CUDA_DIR)/bin/nvcc $(NVCCFLAGS) $(CUDA_ARCH) -M $< -o ${@:.o=.d} \
-		-odir $(@D)
-	$(Q)$(CUDA_DIR)/bin/nvcc $(NVCCFLAGS) $(CUDA_ARCH) -c $< -o $@ 2> $@.$(WARNS_EXT) \
-		|| (cat $@.$(WARNS_EXT); exit 1)
-	@ cat $@.$(WARNS_EXT)
-
-$(TEST_ALL_BIN): $(TEST_MAIN_SRC) $(TEST_OBJS) $(GTEST_OBJ) \
-		| $(DYNAMIC_NAME) $(TEST_BIN_DIR)
-	@ echo CXX/LD -o $@ $<
-	$(Q)$(CXX) $(TEST_MAIN_SRC) $(TEST_OBJS) $(GTEST_OBJ) \
-		-o $@ $(LINKFLAGS) $(LDFLAGS) -l$(PROJECT) -Wl,-rpath,$(ORIGIN)/../lib
-
-$(TEST_CU_BINS): $(TEST_BIN_DIR)/%.testbin: $(TEST_CU_BUILD_DIR)/%.o \
-=======
 		|| (cat $@.$(WARNS_EXT); exit 1)
 	@ cat $@.$(WARNS_EXT)
 
@@ -547,26 +527,11 @@ $(TEST_CU_BINS): $(TEST_BIN_DIR)/%.testbin: $(TEST_CU_BUILD_DIR)/%.o \
 		-o $@ $(LINKFLAGS) $(LDFLAGS) -l$(PROJECT) -Wl,-rpath,$(ORIGIN)/../lib
 
 $(TEST_CXX_BINS): $(TEST_BIN_DIR)/%.testbin: $(TEST_CXX_BUILD_DIR)/%.o \
->>>>>>> IntegrateRC2
 	$(GTEST_OBJ) | $(DYNAMIC_NAME) $(TEST_BIN_DIR)
 	@ echo LD $<
 	$(Q)$(CXX) $(TEST_MAIN_SRC) $< $(GTEST_OBJ) \
 		-o $@ $(LINKFLAGS) $(LDFLAGS) -l$(PROJECT) -Wl,-rpath,$(ORIGIN)/../lib
 
-<<<<<<< HEAD
-$(TEST_CXX_BINS): $(TEST_BIN_DIR)/%.testbin: $(TEST_CXX_BUILD_DIR)/%.o \
-	$(GTEST_OBJ) | $(DYNAMIC_NAME) $(TEST_BIN_DIR)
-	@ echo LD $<
-	$(Q)$(CXX) $(TEST_MAIN_SRC) $< $(GTEST_OBJ) \
-		-o $@ $(LINKFLAGS) $(LDFLAGS) -l$(PROJECT) -Wl,-rpath,$(ORIGIN)/../lib
-
-# Target for extension-less symlinks to tool binaries with extension '*.bin'.
-$(TOOL_BUILD_DIR)/%: $(TOOL_BUILD_DIR)/%.bin | $(TOOL_BUILD_DIR)
-	@ $(RM) $@
-	@ ln -s $(abspath $<) $@
-
-$(TOOL_BINS) $(EXAMPLE_BINS): %.bin : %.o | $(DYNAMIC_NAME)
-=======
 # Target for extension-less symlinks to tool binaries with extension '*.bin'.
 $(TOOL_BUILD_DIR)/%: $(TOOL_BUILD_DIR)/%.bin | $(TOOL_BUILD_DIR)
 	@ $(RM) $@
@@ -578,7 +543,6 @@ $(TOOL_BINS): %.bin : %.o | $(DYNAMIC_NAME)
 		-Wl,-rpath,$(ORIGIN)/../lib
 
 $(EXAMPLE_BINS): %.bin : %.o | $(DYNAMIC_NAME)
->>>>>>> IntegrateRC2
 	@ echo CXX/LD -o $@
 	$(Q)$(CXX) $< -o $@ $(LINKFLAGS) -l$(PROJECT) $(LDFLAGS) \
 		-Wl,-rpath,$(ORIGIN)/../../lib

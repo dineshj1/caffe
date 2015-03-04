@@ -63,22 +63,13 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   Dtype AP = 0, AUROC =0;
   Dtype score_prev=-1; // impossible to have negative values
   Dtype curr_score, curr_label;
-<<<<<<< HEAD
- for(int k=0;k<dim; ++k){
-=======
   for(int k=0;k<dim; ++k){
->>>>>>> IntegrateRC2
     curr_score=bottom_data_vector[k].first;
     curr_label=bottom_data_vector[k].second;
     if(curr_score!=score_prev){// finalize numbers for the previous threshold
         AUROC=AUROC+(0.5*fabs(FP_prev-FP)*(TP_prev+TP)/(P*N));//trapezoid area
-<<<<<<< HEAD
-       AP=AP+0.5*fabs(Rec_prev-Rec)*(Prec_prev+Prec);//trapezoid area
-       score_prev=curr_score;
-=======
         AP=AP+0.5*fabs(Rec_prev-Rec)*(Prec_prev+Prec);//trapezoid area
         score_prev=curr_score;
->>>>>>> IntegrateRC2
         FP_prev=FP;
         TP_prev=TP;
         Prec_prev=Prec;
