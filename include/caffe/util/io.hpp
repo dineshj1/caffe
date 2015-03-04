@@ -109,6 +109,8 @@ inline bool ReadImageToDatum(const string& filename, const int label,
 inline bool ReadImageToDatum(const string& filename, const int label,
     const bool is_color, Datum* datum) {
   return ReadImageToDatum(filename, label, 0, 0, is_color, datum);
+<<<<<<< HEAD
+=======
 }
 
 inline bool ReadImageToDatum(const string& filename, const int label,
@@ -119,6 +121,41 @@ inline bool ReadImageToDatum(const string& filename, const int label,
 inline bool ReadImageToDatum(const string& filename, const int label,
     const std::string & encoding, Datum* datum) {
   return ReadImageToDatum(filename, label, 0, 0, true, encoding, datum);
+>>>>>>> IntegrateRC2
+}
+
+inline bool ReadImageToDatum(const string& filename, const int label,
+    Datum* datum) {
+  return ReadImageToDatum(filename, label, 0, 0, true, datum);
+}
+
+inline bool ReadImageToDatum(const string& filename, const int label,
+    const std::string & encoding, Datum* datum) {
+  return ReadImageToDatum(filename, label, 0, 0, true, encoding, datum);
+}
+
+bool DecodeDatumNative(Datum* datum);
+bool DecodeDatum(Datum* datum, bool is_color);
+
+cv::Mat ReadImageToCVMat(const string& filename,
+    const int height, const int width, const bool is_color);
+
+<<<<<<< HEAD
+cv::Mat ReadImageToCVMat(const string& filename,
+    const int height, const int width);
+
+cv::Mat ReadImageToCVMat(const string& filename,
+    const bool is_color);
+
+cv::Mat ReadImageToCVMat(const string& filename);
+
+cv::Mat DecodeDatumToCVMatNative(const Datum& datum);
+cv::Mat DecodeDatumToCVMat(const Datum& datum, bool is_color);
+
+=======
+inline bool StoreImagePairToDatum(unsigned char* im1, unsigned char* im2,   
+                                 const int label, Datum* datum) {
+  return StoreImagePairToDatum(im1, im2, label, 0, 0, datum);
 }
 
 bool DecodeDatumNative(Datum* datum);
@@ -138,6 +175,7 @@ cv::Mat ReadImageToCVMat(const string& filename);
 cv::Mat DecodeDatumToCVMatNative(const Datum& datum);
 cv::Mat DecodeDatumToCVMat(const Datum& datum, bool is_color);
 
+>>>>>>> IntegrateRC2
 void CVMatToDatum(const cv::Mat& cv_img, Datum* datum);
 
 template <typename Dtype>

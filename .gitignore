@@ -2,7 +2,11 @@
 *.orig
 *.nfs*
 *.log
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> IntegrateRC2
 # Compiled Object files
 *.slo
 *.lo

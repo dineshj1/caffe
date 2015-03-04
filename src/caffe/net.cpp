@@ -4,7 +4,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <cstddef>
 
 #include "caffe/common.hpp"
 #include "caffe/layer.hpp"
@@ -621,7 +620,11 @@ void Net<Dtype>::UpdateDebugInfo(const int param_id) {
 
 template <typename Dtype>
 void Net<Dtype>::ShareTrainedLayersWith(const Net* other) {
+<<<<<<< HEAD
  int num_source_layers = other->layers().size();
+=======
+  int num_source_layers = other->layers().size();
+>>>>>>> IntegrateRC2
   for (int i = 0; i < num_source_layers; ++i) {
     Layer<Dtype>* source_layer = other->layers()[i].get();
     const string& source_layer_name = other->layer_names()[i];
@@ -635,6 +638,7 @@ void Net<Dtype>::ShareTrainedLayersWith(const Net* other) {
       continue;
     }
     DLOG(INFO) << "Copying source layer " << source_layer_name;
+<<<<<<< HEAD
         vector<shared_ptr<Blob<Dtype> > >& target_blobs =
             layers_[target_layer_id]->blobs();
         CHECK_EQ(target_blobs.size(), source_layer->blobs().size())
@@ -648,6 +652,21 @@ void Net<Dtype>::ShareTrainedLayersWith(const Net* other) {
           target_blobs[j]->ShareData(*source_blob);
         }  
       }
+=======
+    vector<shared_ptr<Blob<Dtype> > >& target_blobs =
+        layers_[target_layer_id]->blobs();
+    CHECK_EQ(target_blobs.size(), source_layer->blobs().size())
+        << "Incompatible number of blobs for layer " << source_layer_name;
+    for (int j = 0; j < target_blobs.size(); ++j) {
+      Blob<Dtype>* source_blob = source_layer->blobs()[j].get();
+      CHECK_EQ(target_blobs[j]->num(), source_blob->num());
+      CHECK_EQ(target_blobs[j]->channels(), source_blob->channels());
+      CHECK_EQ(target_blobs[j]->height(), source_blob->height());
+      CHECK_EQ(target_blobs[j]->width(), source_blob->width());
+      target_blobs[j]->ShareData(*source_blob);
+    }
+  }
+>>>>>>> IntegrateRC2
 }
 
 template <typename Dtype>
@@ -703,6 +722,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
       continue;
     }
     DLOG(INFO) << "Copying source layer " << source_layer_name;
+<<<<<<< HEAD
         vector<shared_ptr<Blob<Dtype> > >& target_blobs =
             layers_[target_layer_id]->blobs();
         CHECK_EQ(target_blobs.size(), source_layer.blobs_size())
@@ -715,6 +735,20 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
           target_blobs[j]->FromProto(source_layer.blobs(j));
         }
       }
+=======
+    vector<shared_ptr<Blob<Dtype> > >& target_blobs =
+        layers_[target_layer_id]->blobs();
+    CHECK_EQ(target_blobs.size(), source_layer.blobs_size())
+        << "Incompatible number of blobs for layer " << source_layer_name;
+    for (int j = 0; j < target_blobs.size(); ++j) {
+      CHECK_EQ(target_blobs[j]->num(), source_layer.blobs(j).num());
+      CHECK_EQ(target_blobs[j]->channels(), source_layer.blobs(j).channels());
+      CHECK_EQ(target_blobs[j]->height(), source_layer.blobs(j).height());
+      CHECK_EQ(target_blobs[j]->width(), source_layer.blobs(j).width());
+      target_blobs[j]->FromProto(source_layer.blobs(j));
+    }
+  }
+>>>>>>> IntegrateRC2
 }
 
 template <typename Dtype>
