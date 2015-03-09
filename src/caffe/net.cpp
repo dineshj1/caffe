@@ -37,7 +37,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   // the current NetState.
   NetParameter filtered_param;
   FilterNet(in_param, &filtered_param);
-  LOG(INFO) << "Initializing net from parameters: " << std::endl
+  DLOG(INFO) << "Initializing net from parameters: " << std::endl
             << filtered_param.DebugString();
   // Create a copy of filtered_param with splits added where necessary.
   NetParameter param;
@@ -65,7 +65,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     const LayerParameter& layer_param = param.layers(layer_id);
     layers_.push_back(shared_ptr<Layer<Dtype> >(GetLayer<Dtype>(layer_param)));
     layer_names_.push_back(layer_param.name());
-    LOG(INFO) << "Creating Layer " << layer_param.name();
+    DLOG(INFO) << "Creating Layer " << layer_param.name();
     bool need_backward = false;
     // Figure out this layer's input and output
     for (int bottom_id = 0; bottom_id < layer_param.bottom_size();
@@ -94,20 +94,20 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
       }
     }
     // After this layer is connected, set it up.
-    LOG(INFO) << "Setting up " << layer_names_[layer_id];
+    DLOG(INFO) << "Setting up " << layer_names_[layer_id];
     layers_[layer_id]->SetUp(bottom_vecs_[layer_id], &top_vecs_[layer_id]);
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
       if (blob_loss_weights_.size() <= top_id_vecs_[layer_id][top_id]) {
         blob_loss_weights_.resize(top_id_vecs_[layer_id][top_id] + 1, Dtype(0));
       }
       blob_loss_weights_[top_id_vecs_[layer_id][top_id]] = layer->loss(top_id);
-      LOG(INFO) << "Top shape: " << top_vecs_[layer_id][top_id]->num() << " "
+      DLOG(INFO) << "Top shape: " << top_vecs_[layer_id][top_id]->num() << " "
           << top_vecs_[layer_id][top_id]->channels() << " "
           << top_vecs_[layer_id][top_id]->height() << " "
           << top_vecs_[layer_id][top_id]->width() << " ("
           << top_vecs_[layer_id][top_id]->count() << ")";
       if (layer->loss(top_id)) {
-        LOG(INFO) << "    with loss weight " << layer->loss(top_id);
+        DLOG(INFO) << "    with loss weight " << layer->loss(top_id);
       }
       memory_used_ += top_vecs_[layer_id][top_id]->count();
     }
@@ -168,9 +168,9 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     }
     if (!layer_contributes_loss) { layer_need_backward_[layer_id] = false; }
     if (layer_need_backward_[layer_id]) {
-      LOG(INFO) << layer_names_[layer_id] << " needs backward computation.";
+      DLOG(INFO) << layer_names_[layer_id] << " needs backward computation.";
     } else {
-      LOG(INFO) << layer_names_[layer_id]
+      DLOG(INFO) << layer_names_[layer_id]
                 << " does not need backward computation.";
     }
     for (int bottom_id = 0; bottom_id < bottom_vecs_[layer_id].size();
@@ -343,7 +343,7 @@ void Net<Dtype>::AppendTop(const NetParameter& param, const int layer_id,
   if (blob_name_to_idx && layer_param && layer_param->bottom_size() > top_id &&
       blob_name == layer_param->bottom(top_id)) {
     // In-place computation
-    LOG(INFO) << layer_param->name() << " -> " << blob_name << " (in-place)";
+    DLOG(INFO) << layer_param->name() << " -> " << blob_name << " (in-place)";
     top_vecs_[layer_id].push_back(blobs_[(*blob_name_to_idx)[blob_name]].get());
     top_id_vecs_[layer_id].push_back((*blob_name_to_idx)[blob_name]);
   } else if (blob_name_to_idx &&
@@ -354,9 +354,9 @@ void Net<Dtype>::AppendTop(const NetParameter& param, const int layer_id,
   } else {
     // Normal output.
     if (layer_param) {
-      LOG(INFO) << layer_param->name() << " -> " << blob_name;
+      DLOG(INFO) << layer_param->name() << " -> " << blob_name;
     } else {
-      LOG(INFO) << "Input " << top_id << " -> " << blob_name;
+      DLOG(INFO) << "Input " << top_id << " -> " << blob_name;
     }
     shared_ptr<Blob<Dtype> > blob_pointer(new Blob<Dtype>());
     const int blob_id = blobs_.size();
@@ -392,7 +392,7 @@ int Net<Dtype>::AppendBottom(const NetParameter& param,
                << " (at index " << bottom_id << ") to layer " << layer_id;
   }
   const int blob_id = (*blob_name_to_idx)[blob_name];
-  LOG(INFO) << layer_names_[layer_id] << " <- " << blob_name;
+  DLOG(INFO) << layer_names_[layer_id] << " <- " << blob_name;
   bottom_vecs_[layer_id].push_back(blobs_[blob_id].get());
   bottom_id_vecs_[layer_id].push_back(blob_id);
   available_blobs->erase(blob_name);
@@ -465,7 +465,7 @@ void Net<Dtype>::AppendParam(const NetParameter& param, const int layer_id,
 
 template <typename Dtype>
 void Net<Dtype>::GetLearningRateAndWeightDecay() {
-  LOG(INFO) << "Collecting Learning Rate and Weight Decay.";
+  DLOG(INFO) << "Collecting Learning Rate and Weight Decay.";
   for (int i = 0; i < layers_.size(); ++i) {
     vector<shared_ptr<Blob<Dtype> > >& layer_blobs = layers_[i]->blobs();
     // push the learning rate mutlipliers
@@ -639,12 +639,12 @@ template <typename Dtype>
 void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
     //copying layers from training net to testing net
 
-  LOG(INFO)<<"Running ShareTrainedLayersWith() ****************************";
+  DLOG(INFO)<<"Running ShareTrainedLayersWith() ****************************";
   int num_source_layers = other->layers().size();
   for (int i = 0; i < num_source_layers; ++i) {
     Layer<Dtype>* source_layer = other->layers()[i].get();
     const string& source_layer_name = other->layer_names()[i];
-    LOG(INFO) << "Looking for matches for " << source_layer_name;
+    DLOG(INFO) << "Looking for matches for " << source_layer_name;
     int numMatches=0;
     for (int target_layer_id=0; target_layer_id<layer_names_.size(); target_layer_id++) {
        bool foundSource=0;
@@ -669,7 +669,7 @@ void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
       } 
       if(foundSource ==1){
         numMatches++;
-          LOG(INFO)<<"Matched to "<<target_layer_name;
+          DLOG(INFO)<<"Matched to "<<target_layer_name;
         // copy layers
           //LOG(INFO) << "Copying source layer " << source_layer_name;
         vector<shared_ptr<Blob<Dtype> > >& target_blobs =
@@ -689,10 +689,10 @@ void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
     // log number of copies
     if (numMatches==0){
         //TODO: search for variations
-        LOG(INFO) << "Ignoring source layer " << source_layer_name; 
+        DLOG(INFO) << "Ignoring source layer " << source_layer_name; 
     }
     else{ 
-        LOG(INFO) << "Copied source layer: " << source_layer_name << " to "<< numMatches << " target layers"; 
+        DLOG(INFO) << "Copied source layer: " << source_layer_name << " to "<< numMatches << " target layers"; 
     }
   }
 }
@@ -723,12 +723,12 @@ template <typename Dtype>
 void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
   // copying layers from reference net (e.g. ImageNet) to target net at the time
   // of initialization
-  LOG(INFO)<<"Running CopyTrainedLayersFrom() ****************************";
+  DLOG(INFO)<<"Running CopyTrainedLayersFrom() ****************************";
   int num_source_layers = param.layers_size();
   for (int i = 0; i < num_source_layers; ++i) {
     const LayerParameter& source_layer = param.layers(i);
     const string& source_layer_name = source_layer.name();
-    LOG(INFO) << "Looking for matches for " << source_layer_name;
+    DLOG(INFO) << "Looking for matches for " << source_layer_name;
     int numMatches=0;
     for (int target_layer_id=0; target_layer_id<layer_names_.size(); target_layer_id++) {
       bool foundSource=0;
@@ -753,7 +753,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
       }   
       if(foundSource==1){
         numMatches++;
-        LOG(INFO)<<"Matched to "<<target_layer_name;
+        DLOG(INFO)<<"Matched to "<<target_layer_name;
         // copy layers
         //LOG(INFO) << "Copying source layer " << source_layer_name;
         vector<shared_ptr<Blob<Dtype> > >& target_blobs =
@@ -771,9 +771,9 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
     }
 
     if (numMatches==0){
-        LOG(INFO) << "Ignoring source layer " << source_layer_name; 
+        DLOG(INFO) << "Ignoring source layer " << source_layer_name; 
     }else{ 
-        LOG(INFO) << "Copied source layer: " << source_layer_name << " to "<< numMatches << " target layers"; 
+        DLOG(INFO) << "Copied source layer: " << source_layer_name << " to "<< numMatches << " target layers"; 
     }
   }
 }
