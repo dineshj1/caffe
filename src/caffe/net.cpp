@@ -650,13 +650,13 @@ void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
        bool foundSource=0;
 
       //DLOG(INFO) << "Target #" << target_layer_id<<": "<<layer_names_[target_layer_id];
-      std::string target_layer_name=layer_names_[target_layer_id]; 
+      std::string target_layer_name=layer_names_[target_layer_id];
       DLOG(INFO)<<"Testing against target layer name: "<<target_layer_name;
       if (layer_names_[target_layer_id] == source_layer_name) {
         foundSource=1;
       } else { //taking care of layers marked as copy layers
         std::string new_target_layer_name=target_layer_name;
-        std::size_t found = new_target_layer_name.find_last_of("%^$");//defining characters that can be used to mark copy layer                                         
+        std::size_t found = new_target_layer_name.find_last_of("%^$");//defining characters that can be used to mark copy layer
         while(found!=std::string::npos){ //to allow adding any number of such tags
           new_target_layer_name=new_target_layer_name.substr(0,found);
           DLOG(INFO)<<"Testing against reduced target layer name: "<<new_target_layer_name;
@@ -666,7 +666,7 @@ void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
           }
           found = new_target_layer_name.find_last_of("%^$");
         }
-      } 
+      }
       if(foundSource ==1){
         numMatches++;
           DLOG(INFO)<<"Matched to "<<target_layer_name;
@@ -683,16 +683,16 @@ void Net<Dtype>::ShareTrainedLayersWith(Net* other) {
           CHECK_EQ(target_blobs[j]->height(), source_blob->height());
           CHECK_EQ(target_blobs[j]->width(), source_blob->width());
           target_blobs[j]->ShareData(*source_blob);
-        }  
+        }
       }
     }
     // log number of copies
     if (numMatches==0){
         //TODO: search for variations
-        DLOG(INFO) << "Ignoring source layer " << source_layer_name; 
+        DLOG(INFO) << "Ignoring source layer " << source_layer_name;
     }
-    else{ 
-        DLOG(INFO) << "Copied source layer: " << source_layer_name << " to "<< numMatches << " target layers"; 
+    else{
+        DLOG(INFO) << "Copied source layer: " << source_layer_name << " to "<< numMatches << " target layers";
     }
   }
 }
@@ -732,7 +732,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
     int numMatches=0;
     for (int target_layer_id=0; target_layer_id<layer_names_.size(); target_layer_id++) {
       bool foundSource=0;
- 
+
       //DLOG(INFO) << "Target #" << target_layer_id<<": "<<layer_names_[target_layer_id];
       std::string target_layer_name=layer_names_[target_layer_id];
       DLOG(INFO)<<"Testing against target layer name: "<<target_layer_name;
@@ -740,7 +740,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
         foundSource=1;
       } else { //taking care of layers marked as copy layers
         std::string new_target_layer_name=target_layer_name;
-        std::size_t found = new_target_layer_name.find_last_of("%^$");//defining characters that can be used to mark copy layer                                         
+        std::size_t found = new_target_layer_name.find_last_of("%^$");//defining characters that can be used to mark copy layer
         while(found!=std::string::npos){ //to allow adding any number of such tags
           new_target_layer_name=new_target_layer_name.substr(0,found);
           DLOG(INFO)<<"Testing against reduced target layer name: "<<new_target_layer_name;
@@ -750,7 +750,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
           }
           found = new_target_layer_name.find_last_of("%^$");
         }
-      }   
+      }
       if(foundSource==1){
         numMatches++;
         DLOG(INFO)<<"Matched to "<<target_layer_name;
@@ -771,9 +771,9 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
     }
 
     if (numMatches==0){
-        DLOG(INFO) << "Ignoring source layer " << source_layer_name; 
-    }else{ 
-        DLOG(INFO) << "Copied source layer: " << source_layer_name << " to "<< numMatches << " target layers"; 
+        DLOG(INFO) << "Ignoring source layer " << source_layer_name;
+    }else{
+        DLOG(INFO) << "Copied source layer: " << source_layer_name << " to "<< numMatches << " target layers";
     }
   }
 }
