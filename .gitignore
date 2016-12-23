@@ -1,5 +1,7 @@
 ## General
-
+*.orig
+*.nfs*
+*.log
 # Compiled Object files
 *.slo
 *.lo
@@ -27,7 +29,9 @@
 *.mex*
 
 # build, distribute, and bins
-build
+cmake_build*
+build*
+.build*
 .build_debug/*
 .build_release/*
 distribute/*
@@ -83,6 +87,8 @@ models/*
 
 # build, distribute, and bins (+ python proto bindings)
 build
+build*
+.build*
 .build_debug/*
 .build_release/*
 distribute/*
@@ -108,6 +114,9 @@ docs/dev
 
 # CMake generated files
 *.gen.cmake
+
+# cudnn
+cudnn*
 
 # LevelDB files
 *.sst
