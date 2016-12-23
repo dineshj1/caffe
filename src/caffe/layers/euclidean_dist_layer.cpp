@@ -1,9 +1,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layer.hpp"
-#include "caffe/common_layers.hpp"
-#include "caffe/util/io.hpp"
+#include "caffe/layers/euclidean_dist_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
@@ -24,11 +22,11 @@ void EuclideanDistLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   top[0]->Reshape(bottom[0]->num(),1,1,1);
 }
- 
+
 
 template <typename Dtype>
-void EuclideanDistLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void EuclideanDistLayer<Dtype>::Forward_cpu(
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   int count = bottom[0]->count();
   caffe_sub(
       count,
@@ -58,7 +56,7 @@ void EuclideanDistLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     }
   }
 }
- 
+
 
 #ifdef CPU_ONLY
 STUB_GPU(EuclideanDistLayer);

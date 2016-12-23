@@ -1,0 +1,275 @@
+#!/bin/sh
+
+ROOT_INSTALL_DIR=`pwd`;
+module switch PrgEnv-cray PrgEnv-gnu
+module load intel
+module load cudatoolkit
+module load java
+module load boost
+module load opencv
+module load git
+module load boost
+
+mkdir logs
+#CMAKE
+echo [`date`] Installing CMAKE.
+cd $ROOT_INSTALL_DIR
+wget http://www.cmake.org/files/v3.0/cmake-3.0.1.tar.gz > $ROOT_INSTALL_DIR/logs/CMAKE.log  2>&1 
+tar -xzvf cmake-3.0.1.tar.gz >> $ROOT_INSTALL_DIR/logs/CMAKE.log  2>&1 
+rm cmake-3.0.1.tar.gz
+cd cmake-3.0.1
+mkdir install
+./configure --prefix=install >> $ROOT_INSTALL_DIR/logs/CMAKE.log  2>&1 
+make >> $ROOT_INSTALL_DIR/logs/CMAKE.log  2>&1 
+make install >> $ROOT_INSTALL_DIR/logs/CMAKE.log  2>&1 
+if [ $? -ne 0 ]
+then
+    echo [`date`] CMAKE Installation Failed ... Check CMAKE.log
+    exit 1
+else
+	echo [`date`] CMAKE installed.
+fi
+
+#GLOG
+echo [`date`] Installing GLOG.
+cd $ROOT_INSTALL_DIR
+wget https://google-glog.googlecode.com/files/glog-0.3.3.tar.gz > $ROOT_INSTALL_DIR/logs/GLOG.log  2>&1
+tar zxvf glog-0.3.3.tar.gz > $ROOT_INSTALL_DIR/logs/GLOG.log  2>&1
+rm glog-0.3.3.tar.gz
+cd glog-0.3.3
+mkdir install
+./configure --prefix=$ROOT_INSTALL_DIR/glog-0.3.3/install > $ROOT_INSTALL_DIR/logs/GLOG.log  2>&1
+make > $ROOT_INSTALL_DIR/logs/GLOG.log  2>&1 
+make install >> $ROOT_INSTALL_DIR/logs/GLOG.log  2>&1 
+if [ $? -ne 0 ]
+then
+    echo [`date`] GLOG Installation Failed ... Check GLOG.log
+    exit 1
+else
+	echo [`date`] GLOG installed.
+fi
+
+#GFLAGS
+echo [`date`] Installing GFLAGS.
+cd $ROOT_INSTALL_DIR
+wget https://gflags.googlecode.com/archive/05b155ff59114735ec8cd089f669c4c3d8f59029.tar.gz > $ROOT_INSTALL_DIR/logs/GFLAGS.log  2>&1
+tar zxvf 05b155ff59114735ec8cd089f669c4c3d8f59029.tar.gz > $ROOT_INSTALL_DIR/logs/GLOG.log  2>&1
+rm 05b155ff59114735ec8cd089f669c4c3d8f59029.tar.gz
+mv gflags-05b155ff5911 gflags
+cd gflags
+mkdir build
+cd build
+CXXFLAGS="-fPIC" ../../cmake-3.0.1/install/bin/cmake .. >> $ROOT_INSTALL_DIR/logs/GFLAGS.log  2>&1 
+make >> $ROOT_INSTALL_DIR/logs/GFLAGS.log  2>&1 
+if [ $? -ne 0 ]
+then
+    echo [`date`] GFLAGS Installation Failed ... Check GFLAGS.log
+    exit 1
+else
+	echo [`date`] GFLAGS installed.
+fi
+
+#PROTOBUF
+echo [`date`] Installing PROTOBUF
+cd $ROOT_INSTALL_DIR
+wget https://protobuf.googlecode.com/files/protobuf-2.3.0.tar.gz > $ROOT_INSTALL_DIR/logs/PROTOBUF.log  2>&1 
+tar zxvf protobuf-2.3.0.tar.gz >> $ROOT_INSTALL_DIR/logs/PROTOBUF.log  2>&1 
+rm protobuf-2.3.0.tar.gz
+cd protobuf-2.3.0
+mkdir install
+./autogen.sh >> $ROOT_INSTALL_DIR/logs/PROTOBUF.log  2>&1 
+./configure --prefix=$ROOT_INSTALL_DIR/protobuf-2.3.0/install >> $ROOT_INSTALL_DIR/logs/PROTOBUF.log  2>&1 
+make >> $ROOT_INSTALL_DIR/logs/PROTOBUF.log  2>&1 
+make install >> $ROOT_INSTALL_DIR/logs/PROTOBUF.log  2>&1 
+if [ $? -ne 0 ]
+then
+    echo [`date`] PROTOBUF Installation Failed ... Check PROTOBUF.log
+    exit 1
+else
+	echo [`date`] PROTOBUF installed.
+fi 
+
+#leveldb
+echo [`date`] Installing LEVELDB
+cd $ROOT_INSTALL_DIR
+wget https://github.com/google/leveldb/archive/master.zip > $ROOT_INSTALL_DIR/logs/LEVELDB.log  2>&1 
+unzip master
+rm master
+mv leveldb-master leveldb
+cd leveldb
+make >> $ROOT_INSTALL_DIR/logs/LEVELDB.log  2>&1 
+if [ $? -ne 0 ]
+then
+    echo [`date`] LEVELDB Installation Failed ... Check LEVELDB.log
+    exit 1./	
+else
+	echo [`date`] LEVELDB Installed
+fi
+
+#snappy
+echo [`date`] Installing SNAPPY.
+cd $ROOT_INSTALL_DIR
+wget https://github.com/google/snappy/archive/master.zip > $ROOT_INSTALL_DIR/logs/SNAPPY.log  2>&1 
+unzip master
+rm master
+mv snappy-master snappy
+cd snappy
+mkdir install
+./autogen.sh >> $ROOT_INSTALL_DIR/logs/SNAPPY.log  2>&1 
+./configure --prefix=$ROOT_INSTALL_DIR/snappy/install >> $ROOT_INSTALL_DIR/logs/SNAPPY.log  2>&1 
+autoreconf --force --install
+make >> $ROOT_INSTALL_DIR/logs/SNAPPY.log  2>&1 
+make install >> $ROOT_INSTALL_DIR/logs/SNAPPY.log  2>&1 
+if [ $? -ne 0 ]
+then
+    echo [`date`] SNAPPY Installation Failed ... Check SNAPPY.log
+    exit 1
+else
+	echo [`date`] SNAPPY installed.
+fi
+
+
+#HDF5
+echo [`date`] Installing HDF5.
+cd $ROOT_INSTALL_DIR
+wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.13.tar > $ROOT_INSTALL_DIR/logs/HDF5.log  2>&1 
+tar xvf hdf5-1.8.13.tar >> $ROOT_INSTALL_DIR/logs/HDF5.log  2>&1 
+rm hdf5-1.8.13.tar
+cd hdf5-1.8.13
+mkdir install
+./configure --prefix=$ROOT_INSTALL_DIR/hdf5-1.8.13/install >> $ROOT_INSTALL_DIR/logs/HDF5.log  2>&1 
+make >> $ROOT_INSTALL_DIR/logs/HDF5.log  2>&1 
+make install >> $ROOT_INSTALL_DIR/logs/HDF5.log  2>&1 
+if [ $? -ne 0 ]
+then
+    echo [`date`] HDF5 Installation Failed ... Check HDF5.log
+    exit 1
+else
+	echo [`date`] HDF5 installed.
+fi
+
+#regex
+echo [`date`] Installing REGEX.
+cd $ROOT_INSTALL_DIR
+wget https://ftp.gnu.org/old-gnu/regex/regex-0.12.tar.gz
+tar xvf regex-0.12.tar.gz
+cd regex-0.12
+./configure
+make
+ar ru libgnuregex.a regex.o
+ranlib libgnuregex.a
+echo [`date`] REGEX installed.
+
+
+
+#lmdb
+echo [`date`] Installing LMDB.
+cd $ROOT_INSTALL_DIR
+git clone git://git.openldap.org/openldap.git > $ROOT_INSTALL_DIR/logs/LMDB.log  2>&1 
+cd openldap
+env CPPFLAGS=-I$ROOT_INSTALL_DIR/regex-0.12 \
+    LDFLAGS=-L$ROOT_INSTALL_DIR/regex-0.12 \
+    LIBS=-lgnuregex \
+    ./configure --prefix=$ROOT_INSTALL_DIR/openldap/build >> $ROOT_INSTALL_DIR/logs/LMDB.log  2>&1 
+make depend >> $ROOT_INSTALL_DIR/logs/LMDB.log  2>&1 
+make >> $ROOT_INSTALL_DIR/logs/LMDB.log  2>&1 
+make install >> $ROOT_INSTALL_DIR/logs/LMDB.log  2>&1 
+if [ $? -ne 0 ]
+then
+    echo [`date`] LMDB Installation Failed ... Check LMDB.log
+    exit 1
+else
+	echo [`date`] LMDB installed.
+fi
+
+ 
+#CAFFE
+echo [`date`] Installing CAFFE
+cd $ROOT_INSTALL_DIR
+wget https://github.com/BVLC/caffe/archive/master.zip > $ROOT_INSTALL_DIR/logs/CAFFE.log  2>&1
+unzip master
+rm master
+mv caffe-master caffe
+cd caffe
+
+#Set environment variables
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-5.5/lib64:/opt/intel/opencl-1.2-3.0.67279/lib64:/opt/intel/lib/intel64:/N/soft/intel/mkl/10.2.5.035/lib/em64t
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-6.0/targets/x86_64-linux/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOT_INSTALL_DIR/glog-0.3.3/install/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/intel/mkl/lib/intel64
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOT_INSTALL_DIR/gflags/build/lib
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOT_INSTALL_DIR/protobuf-2.3.0/install/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOT_INSTALL_DIR/snappy/install/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOT_INSTALL_DIR/hdf5-1.8.13/install/lib
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOT_INSTALL_DIR/openldap/libraries/liblmdb
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ROOT_INSTALL_DIR/leveldb
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/nvidia/cudatoolkit/5.0.35/lib
+
+
+
+PATH=$PATH:$HOME/bin:$ROOT_INSTALL_DIR/openldap/build:$ROOT_INSTALL_DIR/protobuf-2.3.0/install/bin
+PATH=$PATH:$ROOT_INSTALL_DIR/gflags/build/bin
+export PATH
+
+
+#write makefile config based on this setup
+echo CUDA_DIR := /opt/nvidia/cudatoolkit/5.0.35 > Makefile.config
+echo CUDA_ARCH := -gencode arch=compute_20,code=sm_20 \
+            	 -gencode arch=compute_20,code=sm_21 \
+                -gencode arch=compute_30,code=sm_30 \
+                -gencode arch=compute_35,code=sm_35  >> Makefile.config
+echo BLAS := mkl  >> Makefile.config
+
+echo INCLUDE_DIRS := /usr/local/include/python2.7 >> Makefile.config
+echo INCLUDE_DIRS += /usr/local/lib/python2.7/dist-packages/numpy/core/include >> Makefile.config
+echo INCLUDE_DIRS += /usr/local/include  >> Makefile.config
+echo INCLUDE_DIRS += $ROOT_INSTALL_DIR/glog-0.3.3/install/include >> Makefile.config
+echo INCLUDE_DIRS += /usr/local/cuda-6.0/targets/x86_64-linux/include >> Makefile.config
+echo INCLUDE_DIRS += /usr/local/cuda/include >> Makefile.config
+echo INCLUDE_DIRS += /opt/nvidia/cudatoolkit/5.0.35/include/ >> Makefile.config
+
+echo INCLUDE_DIRS += $ROOT_INSTALL_DIR/gflags/build/include >> Makefile.config
+echo INCLUDE_DIRS += $ROOT_INSTALL_DIR/gflags/include >> Makefile.config
+echo INCLUDE_DIRS += $ROOT_INSTALL_DIR/protobuf-2.3.0/install/include >> Makefile.config
+echo INCLUDE_DIRS += $ROOT_INSTALL_DIR/snappy/install/include >> Makefile.config
+echo INCLUDE_DIRS += $ROOT_INSTALL_DIR/hdf5-1.8.13/install/include >> Makefile.config
+echo INCLUDE_DIRS += $ROOT_INSTALL_DIR/openldap/libraries/liblmdb >> Makefile.config
+echo INCLUDE_DIRS += $ROOT_INSTALL_DIR/leveldb/include >> Makefile.config
+echo INCLUDE_DIRS += $ROOT_INSTALL_DIR/protobuf-2.3.0/src >> Makefile.config
+
+
+echo LIBRARY_DIRS := /usr/local/lib /usr/lib  >> Makefile.config
+echo LIBRARY_DIRS += $ROOT_INSTALL_DIR/glog-0.3.3/install/lib  >> Makefile.config
+echo LIBRARY_DIRS += $ROOT_INSTALL_DIR/glog-0.3.3/lib >> Makefile.config
+echo LIBRARY_DIRS += /usr/local/cuda-6.0/targets/x86_64-linux/lib >> Makefile.config
+echo LIBRARY_DIRS += /opt/nvidia/cudatoolkit/5.0.35/lib >> Makefile.config
+
+echo LIBRARY_DIRS += $ROOT_INSTALL_DIR/gflags/build/lib >> Makefile.config
+echo LIBRARY_DIRS += $ROOT_INSTALL_DIR/protobuf-2.3.0/install/lib >> Makefile.config
+echo LIBRARY_DIRS += $ROOT_INSTALL_DIR/snappy/install/lib >> Makefile.config
+echo LIBRARY_DIRS += $ROOT_INSTALL_DIR/hdf5-1.8.13/install/lib >> Makefile.config
+echo LIBRARY_DIRS += $ROOT_INSTALL_DIR/openldap/libraries/liblmdb >> Makefile.config 
+echo LIBRARY_DIRS += $ROOT_INSTALL_DIR/leveldb >> Makefile.config
+
+
+echo BUILD_DIR := build >> Makefile.config
+echo DISTRIBUTE_DIR := distribute >> Makefile.config
+echo TEST_GPUID := 0 >> Makefile.config
+
+
+make all >> $ROOT_INSTALL_DIR/logs/CAFFE.log  2>&1 
+if [ $? -ne 0 ]
+then
+    echo [`date`] CAFFE Installation Failed ... Check CAFFE.log
+    exit 1
+else
+	echo [`date`] CAFFE installed.
+fi
+
+
+

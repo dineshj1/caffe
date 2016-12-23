@@ -1,16 +1,17 @@
 ################################################################################################
 # Defines global Caffe_LINK flag, This flag is required to prevent linker from excluding
 # some objects which are not addressed directly but are registered via static constructors
-if(BUILD_SHARED_LIBS)
-  set(Caffe_LINK caffe)
-else()
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(Caffe_LINK -Wl,-force_load caffe)
-  elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(Caffe_LINK -Wl,--whole-archive caffe -Wl,--no-whole-archive)
+macro(caffe_set_caffe_link)
+  if(BUILD_SHARED_LIBS)
+    set(Caffe_LINK caffe)
+  else()
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+      set(Caffe_LINK -Wl,-force_load caffe)
+    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+      set(Caffe_LINK -Wl,--whole-archive caffe -Wl,--no-whole-archive)
+    endif()
   endif()
-endif()
-
+endmacro()
 ################################################################################################
 # Convenient command to setup source group for IDEs that support this feature (VS, XCode)
 # Usage:
@@ -31,7 +32,7 @@ endfunction()
 ################################################################################################
 # Collecting sources from globbing and appending to output list variable
 # Usage:
-#   caffe_source_group(<output_variable> GLOB[_RECURSE] <globbing_expression>)
+#   caffe_collect_sources(<output_variable> GLOB[_RECURSE] <globbing_expression>)
 function(caffe_collect_sources variable)
   cmake_parse_arguments(CAFFE_COLLECT_SOURCES "" "" "GLOB;GLOB_RECURSE" ${ARGN})
   if(CAFFE_COLLECT_SOURCES_GLOB)
@@ -93,7 +94,7 @@ function(caffe_pickup_caffe_sources root)
   caffe_convert_absolute_paths(test_srcs)
   caffe_convert_absolute_paths(test_cuda)
 
-  # propogate to parent scope
+  # propagate to parent scope
   set(srcs ${srcs} PARENT_SCOPE)
   set(cuda ${cuda} PARENT_SCOPE)
   set(test_srcs ${test_srcs} PARENT_SCOPE)
@@ -110,6 +111,10 @@ function(caffe_default_properties target)
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+  # make sure we build all external depepdencies first
+  if (DEFINED external_project_dependencies)
+    add_dependencies(${target} ${external_project_dependencies})
+  endif()
 endfunction()
 
 ################################################################################################
@@ -140,12 +145,12 @@ function(caffe_configure_testdatafile file)
   set(result "")
   foreach(line ${__lines})
     set(result "${result}${PROJECT_SOURCE_DIR}/${line}\n")
-  endforeach()  
+  endforeach()
   file(WRITE ${file}.gen.cmake ${result})
 endfunction()
 
 ################################################################################################
-# Filter outs all files that are not inlcuded in selected list
+# Filter out all files that are not included in selected list
 # Usage:
 #   caffe_leave_only_selected_tests(<filelist_variable> <selected_list>)
 function(caffe_leave_only_selected_tests file_list)

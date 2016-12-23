@@ -3,38 +3,36 @@
 #include <utility>
 #include <vector>
 
-#include "caffe/layer.hpp"
-#include "caffe/util/io.hpp"
+#include "caffe/layers/ap_layer.hpp"
 #include "caffe/util/math_functions.hpp"
-#include "caffe/vision_layers.hpp"
 
 namespace caffe {
 
 template <typename Dtype>
 void APLayer<Dtype>::LayerSetUp(
-  const vector<Blob<Dtype>*>& bottom, vector<Blob<Dtype>*>* top) {
+  const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
     //could get modes etc. for future, for small variations in computing AP
 }
 
 template <typename Dtype>
 void APLayer<Dtype>::Reshape(
-  const vector<Blob<Dtype>*>& bottom, vector<Blob<Dtype>*>* top) {
+  const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   CHECK_EQ(bottom[0]->num(), bottom[1]->num())
       << "The scores and label should have the same number.";//and this should be equal to 2?
   CHECK_EQ(bottom[0]->count(), bottom[1]->count());
   CHECK_EQ(bottom[1]->channels(), 1);
   CHECK_EQ(bottom[1]->height(), 1);
   CHECK_EQ(bottom[1]->width(), 1);
-  (*top)[0]->Reshape(1, 1, 1, 1); // will hold AP
-  (*top)[1]->Reshape(1, 1, 1, 1); // will hold ROC 
+  top[0]->Reshape(1, 1, 1, 1); // will hold AP
+  top[1]->Reshape(1, 1, 1, 1); // will hold ROC
 }
 
 template <typename Dtype>
 void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    vector<Blob<Dtype>*>* top) {
+    const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_scores = bottom[0]->cpu_data();// intended for now to be in the form of distances i.e. lower score => more likely to be positive
   const Dtype* bottom_label = bottom[1]->cpu_data();
-  int dim = bottom[0]->count(); //number of data points, in this case equal to the number of elements 
+  int dim = bottom[0]->count(); //number of data points, in this case equal to the number of elements
 
   // number of positives and negatives
   double P=0, N=0;
@@ -50,12 +48,12 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
   //LOG(INFO) << "P:" << P <<", N:"<<N;
 
-  //sorting 
+  //sorting
   std::vector<std::pair<Dtype, int> > bottom_data_vector;
   for (int j = 0; j < dim; ++j) {
      bottom_data_vector.push_back(std::make_pair(bottom_scores[j], bottom_label[j]));//pairs of scores and labels
   }
-  std::sort(bottom_data_vector.begin(), bottom_data_vector.end()); //sorts in ascending order 
+  std::sort(bottom_data_vector.begin(), bottom_data_vector.end()); //sorts in ascending order
 
   //setting up variables to be updated in loop
   double FP=0, TP=0, FP_prev=0, TP_prev=0;
@@ -83,9 +81,9 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         LOG(FATAL)<<"Unknown label "<< curr_label;
     }
     Prec=TP/(TP+FP);
-    Rec=TP/P; 
+    Rec=TP/P;
   }
-  AP = AP+0.5*fabs(1-Rec_prev)*(0+Prec_prev);//Last trapezoid area 
+  AP = AP+0.5*fabs(1-Rec_prev)*(0+Prec_prev);//Last trapezoid area
   AUROC=AUROC+(0.5*fabs(N-FP_prev)*(P+TP_prev)/(P*N));//Last trapezoid area
   if(AUROC-1.0>1e-5){
     LOG(INFO)<<"AUROC greater than 1 by:"<<AUROC-1;
@@ -103,12 +101,13 @@ void APLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   if(AP>1){
       AP=1.0;
   }
- 
-  (*top)[0]->mutable_cpu_data()[0] = AP;
-  (*top)[1]->mutable_cpu_data()[0] = AUROC;
+
+  top[0]->mutable_cpu_data()[0] = AP;
+  top[1]->mutable_cpu_data()[0] = AUROC;
   // AP layer should not be used as a loss function.
 }
 
 INSTANTIATE_CLASS(APLayer);
+REGISTER_LAYER_CLASS(AP);
 }  // namespace caffe
 

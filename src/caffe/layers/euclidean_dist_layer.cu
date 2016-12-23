@@ -1,9 +1,8 @@
 #include <algorithm>
+#include <cfloat>
 #include <vector>
 
-#include "caffe/layer.hpp"
-#include "caffe/common_layers.hpp"
-#include "caffe/util/io.hpp"
+#include "caffe/layers/euclidean_dist_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
@@ -22,7 +21,7 @@ void EuclideanDistLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     Dtype dot;
     caffe_gpu_dot(channels,
         diff_.gpu_data() + (i*channels), diff_.gpu_data() + (i*channels), &dot);
-    top[0]->mutable_cpu_data()[i]=dot; 
+    top[0]->mutable_cpu_data()[i]=dot;
   }
 }
 
@@ -40,7 +39,7 @@ void EuclideanDistLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
           Dtype(0),                           // beta
           bottom[i]->mutable_gpu_diff());  // b
     }
-  } 
+  }
 }
 
 INSTANTIATE_LAYER_GPU_FUNCS(EuclideanDistLayer);

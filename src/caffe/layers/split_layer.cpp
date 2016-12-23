@@ -1,8 +1,7 @@
 #include <vector>
 
-#include "caffe/layer.hpp"
+#include "caffe/layers/split_layer.hpp"
 #include "caffe/util/math_functions.hpp"
-#include "caffe/vision_layers.hpp"
 
 namespace caffe {
 
@@ -18,8 +17,7 @@ void SplitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     // some strange effects in practice...)
     CHECK_NE(top[i], bottom[0]) << this->type() << " Layer does not "
         "allow in-place computation.";
-    top[i]->Reshape(bottom[0]->num(), bottom[0]->channels(),
-                       bottom[0]->height(), bottom[0]->width());
+    top[i]->ReshapeLike(*bottom[0]);
     CHECK_EQ(count_, top[i]->count());
   }
 }

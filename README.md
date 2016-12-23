@@ -1,8 +1,8 @@
-**The `dev` branch is discontinued in favor of a one branch workflow!**
+# Caffe
 
-<<<<<<< HEAD
-This was adopted in the `rc2` release -- see #1743 for detail.
-=======
+[![Build Status](https://travis-ci.org/BVLC/caffe.svg?branch=master)](https://travis-ci.org/BVLC/caffe)
+[![License](https://img.shields.io/badge/license-BSD-blue.svg)](LICENSE)
+
 Caffe is a deep learning framework made with expression, speed, and modularity in mind.
 It is developed by the Berkeley Vision and Learning Center ([BVLC](http://bvlc.eecs.berkeley.edu)) and community contributors.
 
@@ -35,4 +35,3 @@ Please cite Caffe in your publications if it helps your research:
       Title = {Caffe: Convolutional Architecture for Fast Feature Embedding},
       Year = {2014}
     }
->>>>>>> IntegrateRC2

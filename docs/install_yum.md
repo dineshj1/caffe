@@ -1,5 +1,5 @@
 ---
-title: Installation: RHEL / Fedora / CentOS
+title: "Installation: RHEL / Fedora / CentOS"
 ---
 
 # RHEL / Fedora / CentOS Installation
@@ -15,7 +15,7 @@ title: Installation: RHEL / Fedora / CentOS
 **Remaining dependencies, if not found**
 
     # glog
-    wget https://google-glog.googlecode.com/files/glog-0.3.3.tar.gz
+    wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/google-glog/glog-0.3.3.tar.gz
     tar zxvf glog-0.3.3.tar.gz
     cd glog-0.3.3
     ./configure
@@ -28,8 +28,8 @@ title: Installation: RHEL / Fedora / CentOS
     export CXXFLAGS="-fPIC" && cmake .. && make VERBOSE=1
     make && make install
     # lmdb
-    git clone git://gitorious.org/mdb/mdb.git
-    cd mdb/libraries/liblmdb
+    git clone https://github.com/LMDB/lmdb
+    cd lmdb/libraries/liblmdb
     make && make install
 
 Note that glog does not compile with the most recent gflags version (2.1), so before that is resolved you will need to build with glog first.

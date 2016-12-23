@@ -89,6 +89,9 @@ template <typename Dtype>
 void caffe_exp(const int n, const Dtype* a, Dtype* y);
 
 template <typename Dtype>
+void caffe_log(const int n, const Dtype* a, Dtype* y);
+
+template <typename Dtype>
 void caffe_abs(const int n, const Dtype* a, Dtype* y);
 
 template <typename Dtype>
@@ -97,9 +100,6 @@ Dtype caffe_cpu_dot(const int n, const Dtype* x, const Dtype* y);
 template <typename Dtype>
 Dtype caffe_cpu_strided_dot(const int n, const Dtype* x, const int incx,
     const Dtype* y, const int incy);
-
-template <typename Dtype>
-int caffe_cpu_hamming_distance(const int n, const Dtype* x, const Dtype* y);
 
 // Returns the sum of the absolute values of the elements of vector x
 template <typename Dtype>
@@ -204,6 +204,9 @@ template <typename Dtype>
 void caffe_gpu_exp(const int n, const Dtype* a, Dtype* y);
 
 template <typename Dtype>
+void caffe_gpu_log(const int n, const Dtype* a, Dtype* y);
+
+template <typename Dtype>
 void caffe_gpu_powx(const int n, const Dtype* a, const Dtype b, Dtype* y);
 
 // caffe_gpu_rng_uniform with two arguments generates integers in the range
@@ -227,10 +230,6 @@ void caffe_gpu_rng_bernoulli(const int n, const Dtype p, int* r);
 
 template <typename Dtype>
 void caffe_gpu_dot(const int n, const Dtype* x, const Dtype* y, Dtype* out);
-
-template <typename Dtype>
-uint32_t caffe_gpu_hamming_distance(const int n, const Dtype* x,
-                                    const Dtype* y);
 
 template <typename Dtype>
 void caffe_gpu_asum(const int n, const Dtype* x, Dtype* y);

@@ -10,11 +10,14 @@
 
 #include "glog/logging.h"
 #include "google/protobuf/text_format.h"
-#include "leveldb/db.h"
 #include "stdint.h"
 
 #include "caffe/proto/caffe.pb.h"
+#include "caffe/util/format.hpp"
 #include "caffe/util/math_functions.hpp"
+
+#ifdef USE_LEVELDB
+#include "leveldb/db.h"
 
 uint32_t swap_endian(uint32_t val) {
     val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF);
@@ -43,8 +46,6 @@ void convert_dataset(const char* image_filename, const char* label_filename,
   uint32_t num_labels;
   uint32_t rows;
   uint32_t cols;
-  // Q: how to write the image files? A: explained on the mnist download
-  // webpage, but this need not be the format we use
 
   image_file.read(reinterpret_cast<char*>(&magic), 4);
   magic = swap_endian(magic);
@@ -75,8 +76,6 @@ void convert_dataset(const char* image_filename, const char* label_filename,
   char label_i;
   char label_j;
   char* pixels = new char[2 * rows * cols];
-  const int kMaxKeyLength = 10;
-  char key[kMaxKeyLength];
   std::string value;
 
   caffe::Datum datum;
@@ -86,8 +85,6 @@ void convert_dataset(const char* image_filename, const char* label_filename,
   LOG(INFO) << "A total of " << num_items << " items.";
   LOG(INFO) << "Rows: " << rows << " Cols: " << cols;
   for (int itemid = 0; itemid < num_items; ++itemid) {
-      // Weird: Why should number of random image pairs be equal to the number of
-      // original images i.e. num_items?
     int i = caffe::caffe_rng_rand() % num_items;  // pick a random  pair
     int j = caffe::caffe_rng_rand() % num_items;
     read_image(&image_file, &label_file, i, rows, cols,
@@ -101,12 +98,12 @@ void convert_dataset(const char* image_filename, const char* label_filename,
       datum.set_label(0);
     }
     datum.SerializeToString(&value);
-    snprintf(key, kMaxKeyLength, "%08d", itemid);
-    db->Put(leveldb::WriteOptions(), std::string(key), value);
+    std::string key_str = caffe::format_int(itemid, 8);
+    db->Put(leveldb::WriteOptions(), key_str, value);
   }
 
   delete db;
-  delete pixels;
+  delete [] pixels;
 }
 
 int main(int argc, char** argv) {
@@ -125,3 +122,8 @@ int main(int argc, char** argv) {
   }
   return 0;
 }
+#else
+int main(int argc, char** argv) {
+  LOG(FATAL) << "This example requires LevelDB; compile with USE_LEVELDB.";
+}
+#endif  // USE_LEVELDB
