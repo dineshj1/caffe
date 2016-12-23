@@ -1,6 +1,3 @@
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
 #include <vector>
 
 #include "gtest/gtest.h"
@@ -8,7 +5,7 @@
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
 #include "caffe/filler.hpp"
-#include "caffe/loss_layers.hpp"
+#include "caffe/layers/infogain_loss_layer.hpp"
 
 #include "caffe/test/test_caffe_main.hpp"
 #include "caffe/test/test_gradient_check_util.hpp"
@@ -63,8 +60,8 @@ TYPED_TEST(InfogainLossLayerTest, TestGradient) {
   LayerParameter layer_param;
   InfogainLossLayer<Dtype> layer(layer_param);
   GradientChecker<Dtype> checker(1e-4, 2e-2, 1701, 1, 0.01);
-  checker.CheckGradientExhaustive(&layer, &(this->blob_bottom_vec_),
-      &(this->blob_top_vec_), 0);
+  checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
+      this->blob_top_vec_, 0);
 }
 
 }  // namespace caffe

@@ -1,4 +1,4 @@
-#include <unistd.h>  // for usleep
+#include <boost/thread.hpp>
 
 #include "gtest/gtest.h"
 
@@ -8,6 +8,8 @@
 #include "caffe/test/test_caffe_main.hpp"
 
 namespace caffe {
+
+const float kMillisecondsThreshold = 30;
 
 template <typename TypeParam>
 class BenchmarkTest : public MultiDeviceTest<TypeParam> {};
@@ -62,9 +64,9 @@ TYPED_TEST(BenchmarkTest, TestTimerMilliSeconds) {
   EXPECT_FALSE(timer.running());
   EXPECT_FALSE(timer.has_run_at_least_once());
   timer.Start();
-  usleep(300 * 1000);
-  EXPECT_GE(timer.MilliSeconds(), 290);
-  EXPECT_LE(timer.MilliSeconds(), 310);
+  boost::this_thread::sleep(boost::posix_time::milliseconds(300));
+  EXPECT_GE(timer.MilliSeconds(), 300 - kMillisecondsThreshold);
+  EXPECT_LE(timer.MilliSeconds(), 300 + kMillisecondsThreshold);
   EXPECT_TRUE(timer.initted());
   EXPECT_FALSE(timer.running());
   EXPECT_TRUE(timer.has_run_at_least_once());
@@ -77,9 +79,9 @@ TYPED_TEST(BenchmarkTest, TestTimerSeconds) {
   EXPECT_FALSE(timer.running());
   EXPECT_FALSE(timer.has_run_at_least_once());
   timer.Start();
-  usleep(300 * 1000);
-  EXPECT_GE(timer.Seconds(), 0.290);
-  EXPECT_LE(timer.Seconds(), 0.310);
+  boost::this_thread::sleep(boost::posix_time::milliseconds(300));
+  EXPECT_GE(timer.Seconds(), 0.3 - kMillisecondsThreshold / 1000.);
+  EXPECT_LE(timer.Seconds(), 0.3 + kMillisecondsThreshold / 1000.);
   EXPECT_TRUE(timer.initted());
   EXPECT_FALSE(timer.running());
   EXPECT_TRUE(timer.has_run_at_least_once());

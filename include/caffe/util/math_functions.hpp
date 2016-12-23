@@ -12,7 +12,7 @@
 
 namespace caffe {
 
-// Decaf gemm provides a simpler interface to the gemm functions, with the
+// Caffe gemm provides a simpler interface to the gemm functions, with the
 // limitation that the data has to be contiguous in memory.
 template <typename Dtype>
 void caffe_cpu_gemm(const CBLAS_TRANSPOSE TransA,
@@ -89,6 +89,9 @@ template <typename Dtype>
 void caffe_exp(const int n, const Dtype* a, Dtype* y);
 
 template <typename Dtype>
+void caffe_log(const int n, const Dtype* a, Dtype* y);
+
+template <typename Dtype>
 void caffe_abs(const int n, const Dtype* a, Dtype* y);
 
 template <typename Dtype>
@@ -98,9 +101,6 @@ template <typename Dtype>
 Dtype caffe_cpu_strided_dot(const int n, const Dtype* x, const int incx,
     const Dtype* y, const int incy);
 
-template <typename Dtype>
-int caffe_cpu_hamming_distance(const int n, const Dtype* x, const Dtype* y);
-
 // Returns the sum of the absolute values of the elements of vector x
 template <typename Dtype>
 Dtype caffe_cpu_asum(const int n, const Dtype* x);
@@ -108,7 +108,7 @@ Dtype caffe_cpu_asum(const int n, const Dtype* x);
 // the branchless, type-safe version from
 // http://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
 template<typename Dtype>
-inline char caffe_sign(Dtype val) {
+inline int8_t caffe_sign(Dtype val) {
   return (Dtype(0) < val) - (val < Dtype(0));
 }
 
@@ -127,12 +127,6 @@ inline char caffe_sign(Dtype val) {
     } \
   }
 
-#define INSTANTIATE_CAFFE_CPU_UNARY_FUNC(name) \
-  template <> \
-  void caffe_cpu_##name<float>(const int n, const float* x, float* y); \
-  template <> \
-  void caffe_cpu_##name<double>(const int n, const double* x, double* y)
-
 // output is 1 for the positives, 0 for zero, and -1 for the negatives
 DEFINE_CAFFE_CPU_UNARY_FUNC(sign, y[i] = caffe_sign<Dtype>(x[i]));
 
@@ -140,7 +134,8 @@ DEFINE_CAFFE_CPU_UNARY_FUNC(sign, y[i] = caffe_sign<Dtype>(x[i]));
 // The name sngbit is meant to avoid conflicts with std::signbit in the macro.
 // The extra parens are needed because CUDA < 6.5 defines signbit as a macro,
 // and we don't want that to expand here when CUDA headers are also included.
-DEFINE_CAFFE_CPU_UNARY_FUNC(sgnbit, y[i] = (std::signbit)(x[i]));
+DEFINE_CAFFE_CPU_UNARY_FUNC(sgnbit, \
+    y[i] = static_cast<bool>((std::signbit)(x[i])));
 
 DEFINE_CAFFE_CPU_UNARY_FUNC(fabs, y[i] = std::fabs(x[i]));
 
@@ -206,6 +201,12 @@ template <typename Dtype>
 void caffe_gpu_abs(const int n, const Dtype* a, Dtype* y);
 
 template <typename Dtype>
+void caffe_gpu_exp(const int n, const Dtype* a, Dtype* y);
+
+template <typename Dtype>
+void caffe_gpu_log(const int n, const Dtype* a, Dtype* y);
+
+template <typename Dtype>
 void caffe_gpu_powx(const int n, const Dtype* a, const Dtype b, Dtype* y);
 
 // caffe_gpu_rng_uniform with two arguments generates integers in the range
@@ -229,10 +230,6 @@ void caffe_gpu_rng_bernoulli(const int n, const Dtype p, int* r);
 
 template <typename Dtype>
 void caffe_gpu_dot(const int n, const Dtype* x, const Dtype* y, Dtype* out);
-
-template <typename Dtype>
-uint32_t caffe_gpu_hamming_distance(const int n, const Dtype* x,
-                                    const Dtype* y);
 
 template <typename Dtype>
 void caffe_gpu_asum(const int n, const Dtype* x, Dtype* y);
@@ -269,7 +266,7 @@ void caffe_gpu_##name<double>(const int n, const double* x, double* y) { \
       n, x, y); \
 }
 
-#endif  // CPU_ONLY
+#endif  // !CPU_ONLY
 
 }  // namespace caffe
 

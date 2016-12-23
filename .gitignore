@@ -27,8 +27,7 @@
 *.mex*
 
 # build, distribute, and bins
-build*
-.build*
+build
 .build_debug/*
 .build_release/*
 distribute/*
@@ -36,12 +35,32 @@ distribute/*
 *.bin
 python/caffe/proto/
 
+# IPython notebook checkpoints
+.ipynb_checkpoints
+
 # Editor temporaries
 *.swp
 *~
 
-# IPython notebook checkpoints
-.ipynb_checkpoints
+# Sublime Text settings
+*.sublime-workspace
+*.sublime-project
+
+# Eclipse Project settings
+*.*project
+.settings
+
+# QtCreator files
+*.user
+
+# PyCharm files
+.idea
+
+# Visual Studio Code files
+.vscode
+
+# OSX dir files
+.DS_Store
 
 ## Caffe
 
@@ -55,18 +74,23 @@ Makefile.config.matt
 data/*
 models/*
 *.caffemodel
+*.caffemodel.h5
 *.solverstate
+*.solverstate.h5
 *.binaryproto
 *leveldb
 *lmdb
 
-# LevelDB files
-*.sst
-*.ldb
-LOCK
-LOG*
-CURRENT
-MANIFEST-*
+# build, distribute, and bins (+ python proto bindings)
+build
+.build_debug/*
+.build_release/*
+distribute/*
+*.testbin
+*.bin
+python/caffe/proto/
+cmake_build
+.cmake_build
 
 # Generated documentation
 docs/_site
@@ -85,5 +109,11 @@ docs/dev
 # CMake generated files
 *.gen.cmake
 
-# cudnn
-cudnn*
+# LevelDB files
+*.sst
+*.ldb
+LOCK
+LOG*
+CURRENT
+MANIFEST-*
+

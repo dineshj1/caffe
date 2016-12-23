@@ -1,6 +1,4 @@
 #include <cmath>
-#include <cstdlib>
-#include <cstring>
 #include <vector>
 
 #include "gtest/gtest.h"
@@ -8,7 +6,7 @@
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
 #include "caffe/filler.hpp"
-#include "caffe/vision_layers.hpp"
+#include "caffe/layers/hinge_loss_layer.hpp"
 
 #include "caffe/test/test_caffe_main.hpp"
 #include "caffe/test/test_gradient_check_util.hpp"
@@ -57,8 +55,8 @@ TYPED_TEST(HingeLossLayerTest, TestGradientL1) {
   LayerParameter layer_param;
   HingeLossLayer<Dtype> layer(layer_param);
   GradientChecker<Dtype> checker(1e-2, 2e-3, 1701, 1, 0.01);
-  checker.CheckGradientExhaustive(&layer, &(this->blob_bottom_vec_),
-      &(this->blob_top_vec_), 0);
+  checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
+      this->blob_top_vec_, 0);
 }
 
 TYPED_TEST(HingeLossLayerTest, TestGradientL2) {
@@ -69,8 +67,8 @@ TYPED_TEST(HingeLossLayerTest, TestGradientL2) {
   hinge_loss_param->set_norm(HingeLossParameter_Norm_L2);
   HingeLossLayer<Dtype> layer(layer_param);
   GradientChecker<Dtype> checker(1e-2, 1e-2, 1701);
-  checker.CheckGradientExhaustive(&layer, &(this->blob_bottom_vec_),
-      &(this->blob_top_vec_), 0);
+  checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
+      this->blob_top_vec_, 0);
 }
 
 }  // namespace caffe
